@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parametry Generowania - Anatomia LLM</title>
+    <title>Prompt Engineering - Anatomia LLM</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -11,61 +11,34 @@
             background: #fafafa;
             color: #1a1a1a;
             line-height: 1.6;
-            min-height: 100vh;
         }
         nav {
             padding: 1rem 2rem;
             border-bottom: 1px solid #e0e0e0;
             background: #fff;
         }
-        nav a {
-            color: #666;
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
+        nav a { color: #666; text-decoration: none; font-size: 0.9rem; }
         nav a:hover { color: #000; }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-        }
-        h1 {
-            font-size: 2rem;
-            font-weight: 400;
-            margin-bottom: 1rem;
-        }
-        .intro {
-            color: #666;
-            margin-bottom: 3rem;
-            font-size: 1.1rem;
-        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
+        h1 { font-size: 2rem; font-weight: 400; margin-bottom: 1rem; }
+        .intro { color: #666; margin-bottom: 3rem; font-size: 1.1rem; }
         .section {
             background: #fff;
             border: 1px solid #e0e0e0;
             padding: 2rem;
             margin-bottom: 2rem;
         }
-        .section h2 {
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-            color: #333;
-        }
-        .controls {
-            display: grid;
-            gap: 1.5rem;
-        }
+        .section h2 { font-size: 1.1rem; font-weight: 500; margin-bottom: 1.5rem; color: #333; }
+
+        /* Sliders */
+        .controls { display: grid; gap: 1.5rem; }
         .control-group {
             display: grid;
             grid-template-columns: 120px 1fr 60px;
             align-items: center;
             gap: 1rem;
         }
-        .control-group label {
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
+        .control-group label { font-weight: 500; font-size: 0.9rem; }
         .control-group input[type="range"] {
             width: 100%;
             height: 6px;
@@ -94,19 +67,18 @@
             margin-top: 0.25rem;
             grid-column: 2 / 4;
         }
-        .probability-viz {
-            margin-top: 2rem;
-        }
+
+        /* Probability viz */
+        .probability-viz { margin-top: 2rem; }
         .prob-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
-        .prob-header h3 {
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
+        .prob-header h3 { font-size: 0.95rem; font-weight: 500; }
         .prompt-text {
             font-family: monospace;
             background: #f5f5f5;
@@ -114,21 +86,9 @@
             font-size: 0.85rem;
             border-radius: 4px;
         }
-        .prob-bars {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .prob-bar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .prob-word {
-            width: 100px;
-            font-size: 0.9rem;
-            text-align: right;
-        }
+        .prob-bars { display: flex; flex-direction: column; gap: 8px; }
+        .prob-bar { display: flex; align-items: center; gap: 12px; }
+        .prob-word { width: 100px; font-size: 0.9rem; text-align: right; }
         .prob-fill-container {
             flex: 1;
             height: 24px;
@@ -141,25 +101,11 @@
             background: #333;
             transition: width 0.3s ease;
         }
-        .prob-fill.selected {
-            background: #000;
-        }
-        .prob-percent {
-            width: 50px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: #666;
-        }
-        .output-area {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid #eee;
-        }
-        .output-area h3 {
-            font-size: 0.95rem;
-            font-weight: 500;
-            margin-bottom: 1rem;
-        }
+        .prob-fill.selected { background: #000; }
+        .prob-percent { width: 50px; font-family: monospace; font-size: 0.8rem; color: #666; }
+
+        .output-area { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #eee; }
+        .output-area h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 1rem; }
         .generated-text {
             font-family: monospace;
             background: #f8f8f8;
@@ -169,14 +115,8 @@
             line-height: 1.8;
             border: 1px solid #eee;
         }
-        .generated-text .word {
-            padding: 2px 4px;
-            border-radius: 2px;
-            cursor: help;
-        }
-        .generated-text .word:hover {
-            background: #e8e8e8;
-        }
+        .generated-text .word { padding: 2px 4px; border-radius: 2px; cursor: help; }
+        .generated-text .word:hover { background: #e8e8e8; }
         button {
             padding: 0.75rem 1.5rem;
             background: #333;
@@ -185,25 +125,102 @@
             font-size: 0.9rem;
             cursor: pointer;
             transition: background 0.2s;
-            margin-top: 1rem;
         }
         button:hover { background: #000; }
+
+        /* JSON Editor */
+        .json-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .editor-panel h3 { font-size: 0.9rem; margin-bottom: 0.75rem; font-weight: 500; }
+        .json-editor {
+            width: 100%;
+            min-height: 200px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            resize: vertical;
+        }
+        .json-editor:focus { outline: none; border-color: #666; }
+        .json-preview {
+            background: #f8f8f8;
+            padding: 1rem;
+            min-height: 200px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            border: 1px solid #e0e0e0;
+            overflow: auto;
+        }
+        .json-preview.valid { border-color: #0a0; background: #f5fff5; }
+        .json-preview.invalid { border-color: #c00; background: #fff5f5; }
+        .validation-msg {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            font-size: 0.85rem;
+            border-radius: 4px;
+        }
+        .validation-msg.success { background: #e8f5e9; color: #2e7d32; }
+        .validation-msg.error { background: #ffebee; color: #c62828; }
+
+        /* Scenarios */
+        .scenarios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .scenario-card {
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+            perspective: 1000px;
+        }
+        .scenario-card:hover { border-color: #999; transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.08); }
+        .card-inner {
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .scenario-card.flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back {
+            padding: 1.5rem;
+            min-height: 220px;
+            backface-visibility: hidden;
+        }
+        .card-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            transform: rotateY(180deg);
+            background: #f8f8f8;
+            overflow: auto;
+        }
+        .scenario-icon {
+            width: 48px;
+            height: 48px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .scenario-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+        .scenario-card p { font-size: 0.85rem; color: #666; }
+        .card-back h4 { font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .card-back ul { font-size: 0.8rem; color: #666; padding-left: 1rem; margin-bottom: 0.75rem; }
+        .card-back li { margin-bottom: 0.25rem; }
+        .pro { color: #2e7d32; }
+        .con { color: #c62828; }
+
         .explanation {
             background: #f8f8f8;
             padding: 1.5rem;
             margin-top: 2rem;
             border-left: 3px solid #ddd;
         }
-        .explanation h3 {
-            font-size: 0.95rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-        .explanation p {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 0.5rem;
-        }
+        .explanation h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .explanation p { font-size: 0.9rem; color: #666; margin-bottom: 0.5rem; }
+
         .comparison {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -215,28 +232,28 @@
             background: #fff;
             border: 1px solid #ddd;
         }
-        .comparison-box h4 {
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-        .comparison-box p {
-            font-size: 0.8rem;
-            color: #666;
+        .comparison-box h4 { font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .comparison-box p { font-size: 0.8rem; color: #666; }
+
+        @media (max-width: 768px) {
+            .control-group { grid-template-columns: 1fr; gap: 0.5rem; }
+            .control-group .value { text-align: left; }
+            .description { grid-column: 1; }
+            .json-grid { grid-template-columns: 1fr; }
+            .scenarios-grid { grid-template-columns: 1fr; }
+            .comparison { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="index.html">← Powrót do strony głównej</a>
-    </nav>
+    <nav><a href="index.html">← Powrót do strony głównej</a></nav>
 
     <div class="container">
-        <h1>Parametry Generowania</h1>
-        <p class="intro">Temperature, top-p i top-k kontrolują sposób wyboru kolejnego tokenu. Wpływają na kreatywność, spójność i przewidywalność odpowiedzi.</p>
+        <h1>Prompt Engineering</h1>
+        <p class="intro">Parametry generowania, struktura odpowiedzi i scenariusze pracy z LLM. Naucz się kontrolować zachowanie modelu.</p>
 
         <div class="section">
-            <h2>Dostosuj parametry</h2>
+            <h2>1. Parametry generowania</h2>
             <div class="controls">
                 <div class="control-group">
                     <label>Temperature</label>
@@ -258,6 +275,13 @@
                     <span class="value" id="topkValue">40</span>
                 </div>
                 <p class="description">Rozważa tylko k najbardziej prawdopodobnych tokenów</p>
+
+                <div class="control-group">
+                    <label>Max tokens</label>
+                    <input type="range" id="maxtokens" min="10" max="4096" step="10" value="256">
+                    <span class="value" id="maxValue">256</span>
+                </div>
+                <p class="description">Maksymalna długość odpowiedzi w tokenach</p>
             </div>
 
             <div class="probability-viz">
@@ -273,22 +297,144 @@
                 <button onclick="generate()">Generuj tekst</button>
                 <div class="generated-text" id="generatedText">Kliknij "Generuj tekst" aby zobaczyć wynik...</div>
             </div>
+
+            <div class="explanation">
+                <h3>Jak działają parametry?</h3>
+                <div class="comparison">
+                    <div class="comparison-box">
+                        <h4>Temperature = 0</h4>
+                        <p>Model zawsze wybiera najbardziej prawdopodobny token. Wyniki są powtarzalne i precyzyjne, ale mogą być nudne.</p>
+                    </div>
+                    <div class="comparison-box">
+                        <h4>Temperature = 1+</h4>
+                        <p>Rozkład prawdopodobieństwa jest bardziej "płaski". Model częściej wybiera mniej oczywiste opcje - więcej kreatywności, ale ryzyko halucynacji.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2. Wymuszanie struktury JSON</h2>
+            <div class="json-grid">
+                <div class="editor-panel">
+                    <h3>Prompt z wymaganą strukturą</h3>
+                    <textarea class="json-editor" id="jsonInput">Zwróć dane użytkownika w formacie JSON:
+{
+  "name": "string",
+  "age": number,
+  "email": "string",
+  "interests": ["string"]
+}
+
+Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy</textarea>
+                    <button style="margin-top:0.75rem;" onclick="validateAndPreview()">Waliduj i podgląd</button>
+                    <div class="validation-msg" id="validationMsg"></div>
+                </div>
+                <div class="editor-panel">
+                    <h3>Symulowana odpowiedź modelu</h3>
+                    <div class="json-preview" id="jsonPreview">
+{
+  "name": "Jan Kowalski",
+  "age": 28,
+  "email": "jan@example.com",
+  "interests": ["programowanie", "szachy"]
+}</div>
+                </div>
+            </div>
+            <div class="explanation">
+                <p><strong>Structured Output</strong> to technika wymuszania formatu odpowiedzi. Nowoczesne API (OpenAI, Anthropic) oferują tryb JSON mode, który gwarantuje poprawny JSON. Można też definiować schematy (JSON Schema) do walidacji.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>3. Scenariusze pracy z LLM</h2>
+            <p style="color:#666;font-size:0.9rem;margin-bottom:1.5rem;">Kliknij kartę, aby zobaczyć szczegóły</p>
+            <div class="scenarios-grid">
+                <div class="scenario-card" onclick="flipCard(this)">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="scenario-icon">💬</div>
+                            <h3>Chat Online</h3>
+                            <p>ChatGPT, Claude, Gemini - interfejsy webowe do konwersacji z modelami.</p>
+                        </div>
+                        <div class="card-back">
+                            <h4>Zalety:</h4>
+                            <ul>
+                                <li class="pro">Łatwy dostęp, bez konfiguracji</li>
+                                <li class="pro">Najnowsze modele</li>
+                                <li class="pro">Historia rozmów</li>
+                            </ul>
+                            <h4>Wady:</h4>
+                            <ul>
+                                <li class="con">Dane wysyłane do chmury</li>
+                                <li class="con">Ograniczona kontrola parametrów</li>
+                                <li class="con">Limity użycia w darmowych planach</li>
+                            </ul>
+                            <h4>Dla kogo:</h4>
+                            <p style="font-size:0.8rem;">Casual users, szybkie pytania, prototypowanie</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scenario-card" onclick="flipCard(this)">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="scenario-icon">🖥️</div>
+                            <h3>Lokalny LLM</h3>
+                            <p>Ollama, LM Studio, llama.cpp - modele uruchamiane na własnym komputerze.</p>
+                        </div>
+                        <div class="card-back">
+                            <h4>Zalety:</h4>
+                            <ul>
+                                <li class="pro">Pełna prywatność danych</li>
+                                <li class="pro">Brak kosztów per-token</li>
+                                <li class="pro">Pełna kontrola i customizacja</li>
+                            </ul>
+                            <h4>Wady:</h4>
+                            <ul>
+                                <li class="con">Wymaga mocnego GPU (8GB+ VRAM)</li>
+                                <li class="con">Mniejsze modele = niższa jakość</li>
+                                <li class="con">Wymaga konfiguracji</li>
+                            </ul>
+                            <h4>Dla kogo:</h4>
+                            <p style="font-size:0.8rem;">Developerzy, firmy z wrażliwymi danymi, enthusiasts</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scenario-card" onclick="flipCard(this)">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="scenario-icon">{}</div>
+                            <h3>API</h3>
+                            <p>OpenAI API, Anthropic API, Azure OpenAI - programistyczny dostęp do modeli.</p>
+                        </div>
+                        <div class="card-back">
+                            <h4>Zalety:</h4>
+                            <ul>
+                                <li class="pro">Pełna kontrola parametrów</li>
+                                <li class="pro">Integracja z aplikacjami</li>
+                                <li class="pro">Function calling, streaming</li>
+                            </ul>
+                            <h4>Wady:</h4>
+                            <ul>
+                                <li class="con">Płatność per-token</li>
+                                <li class="con">Wymaga kodu/integracji</li>
+                                <li class="con">Rate limits</li>
+                            </ul>
+                            <h4>Dla kogo:</h4>
+                            <p style="font-size:0.8rem;">Developerzy, produkty SaaS, automatyzacja</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="explanation">
-            <h3>Jak działają parametry?</h3>
-            <div class="comparison">
-                <div class="comparison-box">
-                    <h4>Temperature = 0</h4>
-                    <p>Model zawsze wybiera najbardziej prawdopodobny token. Wyniki są powtarzalne i precyzyjne, ale mogą być nudne.</p>
-                </div>
-                <div class="comparison-box">
-                    <h4>Temperature = 1+</h4>
-                    <p>Rozkład prawdopodobieństwa jest bardziej "płaski". Model częściej wybiera mniej oczywiste opcje - więcej kreatywności, ale ryzyko halucynacji.</p>
-                </div>
-            </div>
-            <p style="margin-top:1rem;"><strong>Top-p (nucleus sampling):</strong> Zamiast brać k tokenów, bierze najmniejszy zbiór tokenów, których łączne prawdopodobieństwo przekracza p.</p>
-            <p><strong>Top-k:</strong> Ogranicza wybór do k najbardziej prawdopodobnych tokenów, niezależnie od ich rzeczywistego prawdopodobieństwa.</p>
+            <h3>Best Practices</h3>
+            <p><strong>Temperature:</strong> Użyj 0-0.3 dla zadań wymagających precyzji (kod, fakty), 0.7-1.0 dla kreatywnych (pisanie, brainstorming).</p>
+            <p><strong>Max tokens:</strong> Ustaw rozsądny limit, aby uniknąć zbyt długich lub zbyt kosztownych odpowiedzi.</p>
+            <p><strong>Structured output:</strong> Zawsze używaj JSON mode lub schema validation w produkcji.</p>
         </div>
     </div>
 
@@ -335,21 +481,20 @@
             const temp = parseFloat(document.getElementById('temperature').value);
             const topp = parseFloat(document.getElementById('topp').value);
             const topk = parseInt(document.getElementById('topk').value);
+            const maxTok = parseInt(document.getElementById('maxtokens').value);
 
             document.getElementById('tempValue').textContent = temp.toFixed(1);
             document.getElementById('toppValue').textContent = topp.toFixed(2);
             document.getElementById('topkValue').textContent = topk;
+            document.getElementById('maxValue').textContent = maxTok;
 
-            // Convert base probs to logits and apply temperature
             const logits = words.map(w => Math.log(w.baseProb + 0.001));
             const probs = softmax(logits, temp);
 
-            // Apply top-k filtering
             let filteredProbs = probs.map((p, i) => ({ prob: p, idx: i }));
             filteredProbs.sort((a, b) => b.prob - a.prob);
             const topkSet = new Set(filteredProbs.slice(0, topk).map(x => x.idx));
 
-            // Apply top-p filtering
             let cumsum = 0;
             const toppSet = new Set();
             for (const item of filteredProbs) {
@@ -359,7 +504,6 @@
                 }
             }
 
-            // Render bars
             const container = document.getElementById('probBars');
             container.innerHTML = '';
 
@@ -397,7 +541,6 @@
             const container = document.getElementById('generatedText');
             container.innerHTML = '<span style="color:#888">Słońce świeci </span>';
 
-            // Animate word by word
             const wordsArray = text.split(' ');
             let i = 0;
             const interval = setInterval(() => {
@@ -414,9 +557,45 @@
             }, 150);
         }
 
+        // JSON validation
+        function validateAndPreview() {
+            const input = document.getElementById('jsonInput').value;
+            const preview = document.getElementById('jsonPreview');
+            const msg = document.getElementById('validationMsg');
+
+            // Extract JSON-like structure from prompt
+            const jsonMatch = input.match(/\{[\s\S]*\}/);
+
+            // Simulate model response
+            const response = {
+                name: "Jan Kowalski",
+                age: 28,
+                email: "jan@example.com",
+                interests: ["programowanie", "szachy"]
+            };
+
+            try {
+                const formatted = JSON.stringify(response, null, 2);
+                preview.textContent = formatted;
+                preview.className = 'json-preview valid';
+                msg.textContent = '✓ JSON poprawny! Odpowiedź zgodna ze schematem.';
+                msg.className = 'validation-msg success';
+            } catch (e) {
+                preview.className = 'json-preview invalid';
+                msg.textContent = '✗ Błąd walidacji: ' + e.message;
+                msg.className = 'validation-msg error';
+            }
+        }
+
+        // Flip cards
+        function flipCard(card) {
+            card.classList.toggle('flipped');
+        }
+
         document.getElementById('temperature').addEventListener('input', updateVisualization);
         document.getElementById('topp').addEventListener('input', updateVisualization);
         document.getElementById('topk').addEventListener('input', updateVisualization);
+        document.getElementById('maxtokens').addEventListener('input', updateVisualization);
 
         updateVisualization();
     </script>

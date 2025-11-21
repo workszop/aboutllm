@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tokenizacja i Embedding - Anatomia LLM</title>
+    <title>Anatomia LLM - Interaktywny Przewodnik</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -11,50 +11,25 @@
             background: #fafafa;
             color: #1a1a1a;
             line-height: 1.6;
-            min-height: 100vh;
         }
         nav {
             padding: 1rem 2rem;
             border-bottom: 1px solid #e0e0e0;
             background: #fff;
         }
-        nav a {
-            color: #666;
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
+        nav a { color: #666; text-decoration: none; font-size: 0.9rem; }
         nav a:hover { color: #000; }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-        }
-        h1 {
-            font-size: 2rem;
-            font-weight: 400;
-            margin-bottom: 1rem;
-        }
-        .intro {
-            color: #666;
-            margin-bottom: 3rem;
-            font-size: 1.1rem;
-        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
+        h1 { font-size: 2rem; font-weight: 400; margin-bottom: 1rem; }
+        .intro { color: #666; margin-bottom: 3rem; font-size: 1.1rem; }
         .section {
             background: #fff;
             border: 1px solid #e0e0e0;
             padding: 2rem;
             margin-bottom: 2rem;
         }
-        .section h2 {
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        .input-area {
-            margin-bottom: 1.5rem;
-        }
+        .section h2 { font-size: 1.1rem; font-weight: 500; margin-bottom: 1rem; color: #333; }
+        .input-area { margin-bottom: 1.5rem; }
         .input-area textarea {
             width: 100%;
             padding: 1rem;
@@ -63,12 +38,8 @@
             font-family: inherit;
             resize: vertical;
             min-height: 80px;
-            transition: border-color 0.2s;
         }
-        .input-area textarea:focus {
-            outline: none;
-            border-color: #999;
-        }
+        .input-area textarea:focus { outline: none; border-color: #999; }
         .tokens-display {
             display: flex;
             flex-wrap: wrap;
@@ -87,14 +58,8 @@
             transition: all 0.2s;
             border: 1px solid transparent;
         }
-        .token:hover {
-            background: #ddd;
-            border-color: #bbb;
-        }
-        .token.selected {
-            background: #333;
-            color: #fff;
-        }
+        .token:hover { background: #ddd; border-color: #bbb; }
+        .token.selected { background: #333; color: #fff; }
         .stats {
             display: flex;
             gap: 2rem;
@@ -104,11 +69,7 @@
             font-size: 0.9rem;
             color: #666;
         }
-        .embedding-viz {
-            display: flex;
-            gap: 2rem;
-            align-items: flex-start;
-        }
+        .embedding-viz { display: flex; gap: 2rem; align-items: flex-start; }
         .vector-display {
             flex: 1;
             font-family: monospace;
@@ -119,94 +80,139 @@
             max-height: 200px;
             overflow-y: auto;
         }
-        .vector-bars {
+        .vector-bars { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .bar-row { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; }
+        .bar-label { width: 30px; color: #999; }
+        .bar { height: 12px; background: #333; transition: width 0.3s ease; }
+        .bar-value { width: 50px; color: #666; font-family: monospace; }
+
+        /* Base vs Instruct */
+        .comparison-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .panel { border: 1px solid #e0e0e0; }
+        .panel-header {
+            background: #f5f5f5;
+            padding: 0.75rem 1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .panel-content { padding: 1rem; min-height: 150px; font-size: 0.9rem; }
+        .panel-content.base { font-family: monospace; font-size: 0.85rem; }
+        .example-selector { margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .example-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            background: #fff;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .example-btn:hover { border-color: #999; }
+        .example-btn.active { background: #333; color: #fff; border-color: #333; }
+
+        /* Timeline */
+        .timeline { display: flex; gap: 0; margin: 2rem 0; }
+        .timeline-step {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
         }
-        .bar-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.75rem;
-        }
-        .bar-label {
-            width: 30px;
+        .timeline-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1;
             color: #999;
         }
-        .bar {
-            height: 12px;
+        .timeline-step:hover { background: #f0f0f0; }
+        .timeline-step.active { background: #333; color: #fff; border-color: #333; }
+        .timeline-step h4 { font-size: 0.9rem; margin-bottom: 0.25rem; }
+        .timeline-step p { font-size: 0.75rem; opacity: 0.7; }
+        .timeline-detail {
+            background: #f8f8f8;
+            padding: 1.5rem;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            display: none;
+        }
+        .timeline-detail.active { display: block; }
+        .timeline-detail h4 { margin-bottom: 0.75rem; font-size: 0.95rem; }
+        .timeline-detail p { font-size: 0.9rem; color: #666; margin-bottom: 0.5rem; }
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        .progress-fill {
+            height: 100%;
             background: #333;
-            transition: width 0.3s ease;
+            width: 0%;
+            transition: width 2s ease;
         }
-        .bar-value {
-            width: 50px;
-            color: #666;
-            font-family: monospace;
+
+        /* Calculator */
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .calc-inputs { display: flex; flex-direction: column; gap: 1rem; }
+        .calc-row { display: flex; flex-direction: column; gap: 0.5rem; }
+        .calc-row label { font-size: 0.85rem; color: #666; }
+        .calc-row input[type="range"] { width: 100%; }
+        .calc-row select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            font-size: 0.9rem;
         }
+        .calc-value { font-family: monospace; font-size: 0.85rem; color: #333; }
+        .calc-results {
+            background: #f8f8f8;
+            padding: 1.5rem;
+            border: 1px solid #e0e0e0;
+        }
+        .calc-results h4 { margin-bottom: 1rem; font-size: 0.95rem; }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        .result-row:last-child { border-bottom: none; }
+        .result-value { font-weight: 500; font-family: monospace; }
+
         .explanation {
             background: #f8f8f8;
             padding: 1.5rem;
-            margin-top: 2rem;
+            margin-top: 1rem;
             border-left: 3px solid #ddd;
         }
-        .explanation h3 {
-            font-size: 0.95rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-        .explanation p {
-            font-size: 0.9rem;
-            color: #666;
-        }
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-        .step {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #999;
-            font-size: 0.85rem;
-        }
-        .step.active { color: #333; }
-        .step-num {
-            width: 24px;
-            height: 24px;
-            border: 1px solid currentColor;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-        }
-        .step.active .step-num {
-            background: #333;
-            color: #fff;
+        .explanation h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .explanation p { font-size: 0.9rem; color: #666; }
+
+        @media (max-width: 768px) {
+            .comparison-panels { grid-template-columns: 1fr; }
+            .calc-grid { grid-template-columns: 1fr; }
+            .timeline { flex-direction: column; }
+            .timeline-step::after { display: none; }
+            .embedding-viz { flex-direction: column; }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="index.html">← Powrót do strony głównej</a>
-    </nav>
+    <nav><a href="index.html">← Powrót do strony głównej</a></nav>
 
     <div class="container">
-        <h1>Tokenizacja i Embedding</h1>
-        <p class="intro">Model LLM nie rozumie tekstu bezpośrednio. Najpierw dzieli go na tokeny, a następnie zamienia każdy token na wektor liczbowy (embedding).</p>
-
-        <div class="step-indicator">
-            <div class="step active" id="step1"><span class="step-num">1</span> Tekst</div>
-            <div class="step" id="step2"><span class="step-num">2</span> Tokenizacja</div>
-            <div class="step" id="step3"><span class="step-num">3</span> Embedding</div>
-        </div>
+        <h1>Anatomia LLM</h1>
+        <p class="intro">Poznaj wewnętrzne mechanizmy dużych modeli językowych: jak przetwarzają tekst, jak powstają i ile kosztują.</p>
 
         <div class="section">
-            <h2>Wpisz tekst do tokenizacji</h2>
+            <h2>1. Tokenizacja - jak model "widzi" tekst</h2>
             <div class="input-area">
                 <textarea id="inputText" placeholder="Wpisz dowolny tekst...">Duże modele językowe są fascynujące!</textarea>
             </div>
@@ -216,27 +222,151 @@
                 <span>Tokeny: <strong id="tokenCount">0</strong></span>
                 <span>Stosunek: <strong id="ratio">0</strong> znaków/token</span>
             </div>
-        </div>
-
-        <div class="section">
-            <h2>Embedding wybranego tokenu</h2>
-            <p style="color:#666;font-size:0.9rem;margin-bottom:1rem;">Kliknij na token powyżej, aby zobaczyć jego reprezentację wektorową (symulacja).</p>
-            <div class="embedding-viz">
-                <div class="vector-display" id="vectorDisplay">
-                    Wybierz token...
-                </div>
-                <div class="vector-bars" id="vectorBars"></div>
+            <div class="explanation">
+                <h3>Jak to działa?</h3>
+                <p><strong>Tokenizacja</strong> dzieli tekst na mniejsze jednostki. Algorytmy jak BPE łączą często występujące sekwencje znaków. Średnio 1 token ≈ 4 znaki w angielskim, ale w polskim może być więcej.</p>
             </div>
         </div>
 
-        <div class="explanation">
-            <h3>Jak to działa?</h3>
-            <p><strong>Tokenizacja</strong> dzieli tekst na mniejsze jednostki. Mogą to być całe słowa, części słów (np. "fascynuj" + "ące") lub pojedyncze znaki. Popularne algorytmy to BPE (Byte-Pair Encoding) i WordPiece.</p>
-            <p style="margin-top:0.5rem;"><strong>Embedding</strong> zamienia każdy token na wektor (listę liczb), np. 768 lub 1536 wymiarów. Podobne znaczeniowo słowa mają podobne wektory - "król" i "królowa" będą blisko siebie w przestrzeni wektorowej.</p>
+        <div class="section">
+            <h2>2. Embedding - reprezentacja wektorowa</h2>
+            <p style="color:#666;font-size:0.9rem;margin-bottom:1rem;">Kliknij na token powyżej, aby zobaczyć jego reprezentację wektorową (symulacja).</p>
+            <div class="embedding-viz">
+                <div class="vector-display" id="vectorDisplay">Wybierz token...</div>
+                <div class="vector-bars" id="vectorBars"></div>
+            </div>
+            <div class="explanation">
+                <p><strong>Embedding</strong> zamienia każdy token na wektor (listę liczb), np. 768 lub 4096 wymiarów. Podobne znaczeniowo słowa mają podobne wektory - "król" i "królowa" będą blisko siebie w przestrzeni wektorowej.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>3. Base Model vs Instruct Model</h2>
+            <div class="example-selector">
+                <button class="example-btn active" onclick="showExample(0)">Pytanie o kod</button>
+                <button class="example-btn" onclick="showExample(1)">Prośba o pomoc</button>
+                <button class="example-btn" onclick="showExample(2)">Dokończ tekst</button>
+            </div>
+            <div class="comparison-panels">
+                <div class="panel">
+                    <div class="panel-header">Base Model (GPT-3 base)</div>
+                    <div class="panel-content base" id="baseResponse"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">Instruct Model (GPT-3.5/4)</div>
+                    <div class="panel-content" id="instructResponse"></div>
+                </div>
+            </div>
+            <div class="explanation">
+                <p><strong>Base Model</strong> to model tylko do przewidywania następnego tokenu - kontynuuje tekst statystycznie. <strong>Instruct Model</strong> został dodatkowo wytrenowany na dialogach i instrukcjach, dzięki czemu odpowiada na pytania.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>4. Jak powstaje LLM?</h2>
+            <div class="timeline">
+                <div class="timeline-step active" onclick="showPhase(0)">
+                    <h4>Pre-training</h4>
+                    <p>Nauka języka</p>
+                </div>
+                <div class="timeline-step" onclick="showPhase(1)">
+                    <h4>SFT</h4>
+                    <p>Fine-tuning instrukcji</p>
+                </div>
+                <div class="timeline-step" onclick="showPhase(2)">
+                    <h4>RLHF</h4>
+                    <p>Uczenie z feedbacku</p>
+                </div>
+            </div>
+            <div class="timeline-detail active" id="phase0">
+                <h4>Pre-training (trening wstępny)</h4>
+                <p>Model uczy się przewidywać następne słowo na ogromnym korpusie tekstu (internet, książki, Wikipedia). Wymaga setek GPU przez tygodnie/miesiące.</p>
+                <p><strong>Koszt:</strong> $2-10M+ dla dużych modeli</p>
+                <p><strong>Dane:</strong> Biliony tokenów tekstu</p>
+                <div class="progress-bar"><div class="progress-fill" id="progress0"></div></div>
+            </div>
+            <div class="timeline-detail" id="phase1">
+                <h4>Supervised Fine-Tuning (SFT)</h4>
+                <p>Model jest trenowany na parach instrukcja-odpowiedź napisanych przez ludzi. Uczy się formatu dialogu i wykonywania poleceń.</p>
+                <p><strong>Dane:</strong> 10-100k przykładów wysokiej jakości</p>
+                <p><strong>Efekt:</strong> Model zaczyna odpowiadać zamiast tylko kontynuować tekst</p>
+                <div class="progress-bar"><div class="progress-fill" id="progress1"></div></div>
+            </div>
+            <div class="timeline-detail" id="phase2">
+                <h4>RLHF (Reinforcement Learning from Human Feedback)</h4>
+                <p>Ludzie oceniają odpowiedzi modelu. Na podstawie tych ocen trenowany jest model nagrody (reward model), który następnie używany jest do optymalizacji głównego modelu.</p>
+                <p><strong>Efekt:</strong> Model jest bardziej pomocny, bezpieczny i zgodny z preferencjami użytkowników</p>
+                <p><strong>Techniki:</strong> PPO, DPO, RLHF</p>
+                <div class="progress-bar"><div class="progress-fill" id="progress2"></div></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>5. Ekonomia LLM - kalkulator kosztów</h2>
+            <div class="calc-grid">
+                <div class="calc-inputs">
+                    <div class="calc-row">
+                        <label>Model</label>
+                        <select id="modelSelect" onchange="updateCalc()">
+                            <option value="gpt4o">GPT-4o ($2.50 / $10 per 1M)</option>
+                            <option value="gpt4">GPT-4 Turbo ($10 / $30 per 1M)</option>
+                            <option value="gpt35">GPT-3.5 Turbo ($0.50 / $1.50 per 1M)</option>
+                            <option value="claude3">Claude 3.5 Sonnet ($3 / $15 per 1M)</option>
+                            <option value="llama">Llama 3.1 70B (self-hosted)</option>
+                        </select>
+                    </div>
+                    <div class="calc-row">
+                        <label>Tokeny wejściowe: <span class="calc-value" id="inputTokensVal">1000</span></label>
+                        <input type="range" id="inputTokens" min="100" max="100000" value="1000" onchange="updateCalc()">
+                    </div>
+                    <div class="calc-row">
+                        <label>Tokeny wyjściowe: <span class="calc-value" id="outputTokensVal">500</span></label>
+                        <input type="range" id="outputTokens" min="100" max="10000" value="500" onchange="updateCalc()">
+                    </div>
+                    <div class="calc-row">
+                        <label>Liczba zapytań/dzień: <span class="calc-value" id="requestsVal">100</span></label>
+                        <input type="range" id="requests" min="10" max="10000" value="100" onchange="updateCalc()">
+                    </div>
+                    <div class="calc-row">
+                        <label>Tryb</label>
+                        <select id="modeSelect" onchange="updateCalc()">
+                            <option value="batch">Batch (tańszy, wolniejszy)</option>
+                            <option value="stream">Streaming (real-time)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="calc-results">
+                    <h4>Szacunkowe koszty</h4>
+                    <div class="result-row">
+                        <span>Koszt/zapytanie</span>
+                        <span class="result-value" id="costPerRequest">$0.00</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Koszt/dzień</span>
+                        <span class="result-value" id="costPerDay">$0.00</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Koszt/miesiąc</span>
+                        <span class="result-value" id="costPerMonth">$0.00</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Latency (szacunkowo)</span>
+                        <span class="result-value" id="latency">~0ms</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Throughput</span>
+                        <span class="result-value" id="throughput">~0 tok/s</span>
+                    </div>
+                </div>
+            </div>
+            <div class="explanation">
+                <p><strong>Input tokens</strong> są tańsze niż <strong>output tokens</strong>. Batch processing może być 50% tańszy, ale ma większą latencję. Self-hosted modele mają wysoki koszt początkowy (GPU), ale niższe koszty per token.</p>
+            </div>
         </div>
     </div>
 
     <script>
+        // Tokenization
         const inputText = document.getElementById('inputText');
         const tokensDisplay = document.getElementById('tokensDisplay');
         const charCount = document.getElementById('charCount');
@@ -245,32 +375,24 @@
         const vectorDisplay = document.getElementById('vectorDisplay');
         const vectorBars = document.getElementById('vectorBars');
 
-        // Simple tokenizer simulation (BPE-like)
         function tokenize(text) {
             if (!text) return [];
             const tokens = [];
-            const words = text.split(/(\s+|[.,!?;:])/);
-
+            const words = text.split(/(\s+|[.,!?;:„""])/);
             words.forEach(word => {
                 if (!word) return;
-                if (/^\s+$/.test(word)) {
-                    tokens.push(word);
-                } else if (/^[.,!?;:]$/.test(word)) {
-                    tokens.push(word);
-                } else if (word.length > 6) {
-                    // Split longer words
+                if (/^\s+$/.test(word)) { tokens.push(word); }
+                else if (/^[.,!?;:„""]$/.test(word)) { tokens.push(word); }
+                else if (word.length > 6) {
                     const mid = Math.ceil(word.length / 2);
                     tokens.push(word.slice(0, mid));
                     tokens.push(word.slice(mid));
-                } else {
-                    tokens.push(word);
-                }
+                } else { tokens.push(word); }
             });
             return tokens.filter(t => t.length > 0);
         }
 
         function generateEmbedding(token) {
-            // Generate pseudo-random but deterministic embedding
             const seed = token.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
             const embedding = [];
             for (let i = 0; i < 12; i++) {
@@ -283,32 +405,24 @@
         function updateTokens() {
             const text = inputText.value;
             const tokens = tokenize(text);
-
             tokensDisplay.innerHTML = '';
-            tokens.forEach((token, i) => {
+            tokens.forEach((token) => {
                 const span = document.createElement('span');
                 span.className = 'token';
                 span.textContent = token.replace(/ /g, '␣');
                 span.onclick = () => selectToken(token, span);
                 tokensDisplay.appendChild(span);
             });
-
             charCount.textContent = text.length;
             tokenCount.textContent = tokens.length;
             ratio.textContent = tokens.length > 0 ? (text.length / tokens.length).toFixed(1) : '0';
-
-            // Update step indicators
-            document.getElementById('step2').classList.add('active');
         }
 
         function selectToken(token, element) {
             document.querySelectorAll('.token').forEach(t => t.classList.remove('selected'));
             element.classList.add('selected');
-
             const embedding = generateEmbedding(token);
-
-            vectorDisplay.innerHTML = `Token: "${token}"<br><br>[${embedding.join(',<br> ')}]<br><br>... (768 wymiarów w rzeczywistości)`;
-
+            vectorDisplay.innerHTML = `Token: "${token}"<br><br>[${embedding.join(',<br> ')}]<br><br>... (4096 wymiarów w rzeczywistości)`;
             vectorBars.innerHTML = '';
             embedding.forEach((val, i) => {
                 const row = document.createElement('div');
@@ -321,12 +435,89 @@
                 `;
                 vectorBars.appendChild(row);
             });
-
-            document.getElementById('step3').classList.add('active');
         }
 
         inputText.addEventListener('input', updateTokens);
         updateTokens();
+
+        // Base vs Instruct
+        const examples = [
+            {
+                prompt: "Napisz funkcję w Python sortującą listę",
+                base: "Napisz funkcję w Python sortującą listę\n\ndef sort_list(lst):\n    return sorted(lst)\n\ndef sort_list_desc(lst):\n    return sorted(lst, reverse=True)\n\n# Przykład użycia:\nnumbers = [3, 1, 4, 1, 5, 9, 2, 6]\nprint(sort_list(numbers))\n\n# Inne metody sortowania:\n# 1. Bubble sort\n# 2. Quick sort\n# 3. Merge sort...",
+                instruct: "Oto funkcja w Pythonie sortująca listę:\n\n```python\ndef sort_list(lst):\n    return sorted(lst)\n```\n\nMożesz też sortować malejąco:\n```python\ndef sort_descending(lst):\n    return sorted(lst, reverse=True)\n```\n\nCzy potrzebujesz wyjaśnienia lub innej wersji?"
+            },
+            {
+                prompt: "Pomóż mi zrozumieć rekurencję",
+                base: "Pomóż mi zrozumieć rekurencję\n\nRekurencja to technika programowania, w której funkcja wywołuje samą siebie. Jest szeroko stosowana w informatyce do rozwiązywania problemów, które można podzielić na mniejsze podproblemy tego samego typu.\n\nPrzykłady rekurencji:\n1. Silnia\n2. Fibonacci\n3. Przeszukiwanie drzewa\n4. Sortowanie...",
+                instruct: "**Rekurencja** to technika, w której funkcja wywołuje samą siebie.\n\n**Prosty przykład - silnia:**\n```python\ndef silnia(n):\n    if n <= 1:  # Przypadek bazowy\n        return 1\n    return n * silnia(n - 1)  # Wywołanie rekurencyjne\n```\n\n**Kluczowe elementy:**\n1. **Przypadek bazowy** - warunek stopu\n2. **Krok rekurencyjny** - wywołanie z mniejszym problemem\n\nCzy chcesz więcej przykładów?"
+            },
+            {
+                prompt: "Polska jest krajem w Europie",
+                base: "Polska jest krajem w Europie środkowo-wschodniej. Graniczy z Niemcami na zachodzie, Czechami i Słowacją na południu, Ukrainą i Białorusią na wschodzie oraz Litwą i Rosją (obwód kaliningradzki) na północy. Stolica Polski to Warszawa, a największe miasta to Kraków, Łódź, Wrocław i Poznań. Polska ma bogatą historię...",
+                instruct: "Tak, Polska to kraj w Europie Środkowo-Wschodniej. Czy masz jakieś konkretne pytanie o Polskę? Mogę pomóc z informacjami o:\n- Geografii i klimacie\n- Historii\n- Kulturze i tradycjach\n- Turystyce\n- Gospodarce\n\nO czym chciałbyś się dowiedzieć?"
+            }
+        ];
+
+        function showExample(idx) {
+            document.querySelectorAll('.example-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.example-btn')[idx].classList.add('active');
+            document.getElementById('baseResponse').innerHTML = examples[idx].base.replace(/\n/g, '<br>');
+            document.getElementById('instructResponse').innerHTML = examples[idx].instruct.replace(/\n/g, '<br>').replace(/```(\w+)?\n?/g, '<code>').replace(/```/g, '</code>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        }
+        showExample(0);
+
+        // Timeline
+        function showPhase(idx) {
+            document.querySelectorAll('.timeline-step').forEach((s, i) => s.classList.toggle('active', i === idx));
+            document.querySelectorAll('.timeline-detail').forEach((d, i) => d.classList.toggle('active', i === idx));
+
+            // Animate progress
+            setTimeout(() => {
+                const fill = document.getElementById('progress' + idx);
+                fill.style.width = '100%';
+            }, 100);
+
+            // Reset other progress bars
+            for (let i = 0; i < 3; i++) {
+                if (i !== idx) {
+                    document.getElementById('progress' + i).style.width = '0%';
+                }
+            }
+        }
+
+        // Calculator
+        const models = {
+            gpt4o: { input: 2.5, output: 10, latency: 200, throughput: 80 },
+            gpt4: { input: 10, output: 30, latency: 400, throughput: 50 },
+            gpt35: { input: 0.5, output: 1.5, latency: 100, throughput: 100 },
+            claude3: { input: 3, output: 15, latency: 250, throughput: 70 },
+            llama: { input: 0.1, output: 0.1, latency: 150, throughput: 60 }
+        };
+
+        function updateCalc() {
+            const model = models[document.getElementById('modelSelect').value];
+            const inputTok = parseInt(document.getElementById('inputTokens').value);
+            const outputTok = parseInt(document.getElementById('outputTokens').value);
+            const requests = parseInt(document.getElementById('requests').value);
+            const mode = document.getElementById('modeSelect').value;
+
+            document.getElementById('inputTokensVal').textContent = inputTok.toLocaleString();
+            document.getElementById('outputTokensVal').textContent = outputTok.toLocaleString();
+            document.getElementById('requestsVal').textContent = requests.toLocaleString();
+
+            const batchDiscount = mode === 'batch' ? 0.5 : 1;
+            const costPerReq = ((inputTok * model.input / 1000000) + (outputTok * model.output / 1000000)) * batchDiscount;
+            const costPerDay = costPerReq * requests;
+            const costPerMonth = costPerDay * 30;
+
+            document.getElementById('costPerRequest').textContent = '$' + costPerReq.toFixed(4);
+            document.getElementById('costPerDay').textContent = '$' + costPerDay.toFixed(2);
+            document.getElementById('costPerMonth').textContent = '$' + costPerMonth.toFixed(2);
+            document.getElementById('latency').textContent = '~' + (model.latency * (mode === 'batch' ? 3 : 1)) + 'ms';
+            document.getElementById('throughput').textContent = '~' + model.throughput + ' tok/s';
+        }
+        updateCalc();
     </script>
 </body>
 </html>
