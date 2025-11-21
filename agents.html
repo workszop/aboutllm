@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenci AI - Anatomia LLM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        nav {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e0e0e0;
+            background: #fff;
+        }
+        nav a { color: #666; text-decoration: none; font-size: 0.9rem; }
+        nav a:hover { color: #000; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
+        h1 { font-size: 2rem; font-weight: 400; margin-bottom: 1rem; }
+        .intro { color: #666; margin-bottom: 3rem; font-size: 1.1rem; }
+        .section {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .section h2 { font-size: 1.1rem; font-weight: 500; margin-bottom: 1.5rem; }
+
+        .cycle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+        .cycle {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            max-width: 500px;
+        }
+        .cycle-step {
+            width: 140px;
+            height: 140px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #fff;
+        }
+        .cycle-step:hover {
+            border-color: #999;
+        }
+        .cycle-step.active {
+            border-color: #333;
+            background: #333;
+            color: #fff;
+        }
+        .cycle-step h3 { font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; }
+        .cycle-step p { font-size: 0.7rem; opacity: 0.7; }
+        .cycle-arrow {
+            font-size: 1.5rem;
+            color: #ccc;
+            align-self: center;
+        }
+
+        .agent-demo {
+            margin-top: 2rem;
+            border: 1px solid #e0e0e0;
+        }
+        .demo-header {
+            background: #f5f5f5;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .demo-header h3 { font-size: 0.9rem; font-weight: 500; }
+        .demo-content {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            min-height: 300px;
+        }
+        .tools-panel {
+            background: #f8f8f8;
+            border-right: 1px solid #e0e0e0;
+            padding: 1rem;
+        }
+        .tools-panel h4 { font-size: 0.8rem; color: #666; margin-bottom: 0.75rem; }
+        .tool-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .tool-item.active {
+            border-color: #333;
+            background: #333;
+            color: #fff;
+        }
+        .tool-icon {
+            width: 20px;
+            height: 20px;
+            background: #e8e8e8;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+        .tool-item.active .tool-icon { background: #555; }
+        .output-panel { padding: 1rem; overflow-y: auto; }
+        .log-entry {
+            padding: 0.5rem;
+            border-left: 3px solid #ddd;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            background: #fafafa;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .log-entry.plan { border-color: #666; }
+        .log-entry.tool { border-color: #333; }
+        .log-entry.execute { border-color: #888; }
+        .log-entry.reflect { border-color: #aaa; }
+        .log-entry .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 0.25rem;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            background: #333;
+            color: #fff;
+            border: none;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        button:hover { background: #000; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .comparison-box {
+            padding: 1.5rem;
+            border: 1px solid #e0e0e0;
+        }
+        .comparison-box h3 {
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .comparison-box ul {
+            list-style: none;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        .comparison-box li {
+            padding: 0.25rem 0;
+            padding-left: 1rem;
+            position: relative;
+        }
+        .comparison-box li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+        }
+        .explanation {
+            background: #f8f8f8;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-left: 3px solid #ddd;
+        }
+        .explanation h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .explanation p { font-size: 0.9rem; color: #666; }
+        @media (max-width: 768px) {
+            .demo-content { grid-template-columns: 1fr; }
+            .tools-panel { border-right: none; border-bottom: 1px solid #e0e0e0; }
+            .comparison { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav><a href="index.html">← Powrót do strony głównej</a></nav>
+
+    <div class="container">
+        <h1>Agenci AI</h1>
+        <p class="intro">Agent AI to system, który autonomicznie planuje, wybiera narzędzia i wykonuje zadania. W przeciwieństwie do chatbota, agent może aktywnie działać w środowisku użytkownika.</p>
+
+        <div class="section">
+            <h2>Cykl działania agenta</h2>
+            <div class="cycle-container">
+                <div class="cycle">
+                    <div class="cycle-step" id="cyclePlan" onclick="highlightStep('plan')">
+                        <h3>Planowanie</h3>
+                        <p>Analiza zadania i strategia</p>
+                    </div>
+                    <span class="cycle-arrow">→</span>
+                    <div class="cycle-step" id="cycleTool" onclick="highlightStep('tool')">
+                        <h3>Wybór narzędzia</h3>
+                        <p>Jakie API/akcja?</p>
+                    </div>
+                    <span class="cycle-arrow">→</span>
+                    <div class="cycle-step" id="cycleExecute" onclick="highlightStep('execute')">
+                        <h3>Wykonanie</h3>
+                        <p>Uruchomienie akcji</p>
+                    </div>
+                    <span class="cycle-arrow">→</span>
+                    <div class="cycle-step" id="cycleReflect" onclick="highlightStep('reflect')">
+                        <h3>Refleksja</h3>
+                        <p>Czy cel osiągnięty?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Symulacja agenta</h2>
+            <div class="agent-demo">
+                <div class="demo-header">
+                    <h3>Zadanie: "Znajdź pliki .py i policz linie kodu"</h3>
+                    <button onclick="runAgent()" id="runBtn">Uruchom agenta</button>
+                </div>
+                <div class="demo-content">
+                    <div class="tools-panel">
+                        <h4>Dostępne narzędzia</h4>
+                        <div class="tool-item" id="toolBash">
+                            <span class="tool-icon">$</span>
+                            <span>Bash</span>
+                        </div>
+                        <div class="tool-item" id="toolRead">
+                            <span class="tool-icon">R</span>
+                            <span>Read File</span>
+                        </div>
+                        <div class="tool-item" id="toolWrite">
+                            <span class="tool-icon">W</span>
+                            <span>Write File</span>
+                        </div>
+                        <div class="tool-item" id="toolSearch">
+                            <span class="tool-icon">?</span>
+                            <span>Search</span>
+                        </div>
+                    </div>
+                    <div class="output-panel" id="outputPanel">
+                        <div style="color:#999;font-size:0.85rem;">Kliknij "Uruchom agenta" aby zobaczyć proces...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Chatbot vs Agent</h2>
+            <div class="comparison">
+                <div class="comparison-box">
+                    <h3>Chatbot</h3>
+                    <ul>
+                        <li>Reaguje na pytania</li>
+                        <li>Jeden obrót konwersacji</li>
+                        <li>Brak dostępu do narzędzi</li>
+                        <li>Odpowiada tekstem</li>
+                        <li>Pasywny</li>
+                    </ul>
+                </div>
+                <div class="comparison-box">
+                    <h3>Agent AI</h3>
+                    <ul>
+                        <li>Realizuje cele</li>
+                        <li>Wielokrotne iteracje</li>
+                        <li>Używa narzędzi (API, pliki, bazy)</li>
+                        <li>Wykonuje akcje</li>
+                        <li>Proaktywny</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h3>Elementy agenta</h3>
+            <p><strong>Planer:</strong> Dekomponuje zadanie na kroki, decyduje o kolejności działań.</p>
+            <p><strong>Pamięć:</strong> Krótkoterminowa (kontekst) i długoterminowa (baza wiedzy, historia).</p>
+            <p><strong>Narzędzia:</strong> API, dostęp do plików, bazy danych, wyszukiwarki, wykonywanie kodu.</p>
+            <p style="margin-top:1rem;"><strong>Przykłady:</strong> Claude Code, GitHub Copilot Workspace, AutoGPT, Devin</p>
+        </div>
+    </div>
+
+    <script>
+        function highlightStep(step) {
+            document.querySelectorAll('.cycle-step').forEach(s => s.classList.remove('active'));
+            document.getElementById('cycle' + step.charAt(0).toUpperCase() + step.slice(1)).classList.add('active');
+        }
+
+        async function runAgent() {
+            const btn = document.getElementById('runBtn');
+            const output = document.getElementById('outputPanel');
+            btn.disabled = true;
+            output.innerHTML = '';
+
+            const steps = [
+                { phase: 'plan', tool: null, text: 'Analizuję zadanie: potrzebuję znaleźć pliki .py i policzyć linie.' },
+                { phase: 'plan', tool: null, text: 'Strategia: 1) Wyszukaj pliki, 2) Odczytaj każdy, 3) Zlicz linie, 4) Podsumuj.' },
+                { phase: 'tool', tool: 'toolSearch', text: 'Wybieram narzędzie: Search - do znalezienia plików .py' },
+                { phase: 'execute', tool: 'toolSearch', text: 'Wykonuję: find . -name "*.py"' },
+                { phase: 'execute', tool: null, text: 'Wynik: znaleziono 3 pliki (main.py, utils.py, test.py)' },
+                { phase: 'reflect', tool: null, text: 'Refleksja: Mam listę plików. Teraz muszę policzyć linie.' },
+                { phase: 'tool', tool: 'toolBash', text: 'Wybieram narzędzie: Bash - do policzenia linii' },
+                { phase: 'execute', tool: 'toolBash', text: 'Wykonuję: wc -l main.py utils.py test.py' },
+                { phase: 'execute', tool: null, text: 'Wynik: main.py: 142, utils.py: 87, test.py: 53' },
+                { phase: 'reflect', tool: null, text: 'Refleksja: Mam wszystkie dane. Cel osiągnięty!' },
+                { phase: 'plan', tool: null, text: 'Podsumowanie: Znaleziono 3 pliki Python, łącznie 282 linie kodu.' }
+            ];
+
+            for (const step of steps) {
+                // Highlight cycle step
+                highlightStep(step.phase);
+
+                // Highlight tool if applicable
+                document.querySelectorAll('.tool-item').forEach(t => t.classList.remove('active'));
+                if (step.tool) {
+                    document.getElementById(step.tool).classList.add('active');
+                }
+
+                // Add log entry
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${step.phase}`;
+                entry.innerHTML = `<div class="label">${step.phase}</div>${step.text}`;
+                output.appendChild(entry);
+                output.scrollTop = output.scrollHeight;
+
+                await new Promise(r => setTimeout(r, 800));
+            }
+
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>

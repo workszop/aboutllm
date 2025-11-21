@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anatomia LLM - Interaktywny Przewodnik</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        header {
+            text-align: center;
+            padding: 4rem 2rem 3rem;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+        header p {
+            color: #666;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            padding: 3rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 2rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            border-color: #999;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+        }
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+        .card p {
+            color: #666;
+            font-size: 0.95rem;
+            flex-grow: 1;
+        }
+        .card-preview {
+            margin-top: 1.5rem;
+            height: 80px;
+            background: #f8f8f8;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+            font-size: 0.85rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        /* Mini previews */
+        .preview-tokens { display: flex; gap: 4px; }
+        .preview-tokens span {
+            background: #e8e8e8;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 2px;
+        }
+        .preview-slider {
+            width: 120px;
+            height: 4px;
+            background: linear-gradient(to right, #ddd 0%, #888 50%, #333 100%);
+            border-radius: 2px;
+        }
+        .preview-flow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            color: #888;
+        }
+        .preview-flow span {
+            width: 8px;
+            height: 8px;
+            background: #ccc;
+            border-radius: 50%;
+        }
+        .preview-cycle {
+            display: flex;
+            gap: 6px;
+        }
+        .preview-cycle div {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+        }
+        .preview-shield {
+            width: 32px;
+            height: 38px;
+            border: 2px solid #ccc;
+            border-radius: 4px 4px 16px 16px;
+        }
+        .preview-code {
+            font-family: monospace;
+            font-size: 0.65rem;
+            color: #888;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Anatomia LLM</h1>
+        <p>Interaktywny przewodnik po dużych modelach językowych. Poznaj kluczowe koncepcje przez wizualizacje i symulacje.</p>
+    </header>
+
+    <main class="grid">
+        <a href="tokenization.html" class="card">
+            <div class="card-icon">T</div>
+            <h2>Tokenizacja i Embedding</h2>
+            <p>Jak model "widzi" tekst? Poznaj proces dzielenia tekstu na tokeny i ich reprezentację wektorową.</p>
+            <div class="card-preview">
+                <div class="preview-tokens">
+                    <span>Cześć</span>
+                    <span>,</span>
+                    <span>świecie</span>
+                    <span>!</span>
+                </div>
+            </div>
+        </a>
+
+        <a href="temperature.html" class="card">
+            <div class="card-icon">~</div>
+            <h2>Parametry Generowania</h2>
+            <p>Temperature, top-p, top-k - jak wpływają na kreatywność i precyzję odpowiedzi modelu.</p>
+            <div class="card-preview">
+                <div class="preview-slider"></div>
+            </div>
+        </a>
+
+        <a href="rag.html" class="card">
+            <div class="card-icon">+</div>
+            <h2>RAG i Kontekst</h2>
+            <p>Retrieval-Augmented Generation - jak łączyć LLM z zewnętrzną bazą wiedzy.</p>
+            <div class="card-preview">
+                <div class="preview-flow">
+                    <span></span>→<span></span>→<span></span>→ LLM
+                </div>
+            </div>
+        </a>
+
+        <a href="agents.html" class="card">
+            <div class="card-icon">A</div>
+            <h2>Agenci AI</h2>
+            <p>Cykl działania agenta: planowanie, wybór narzędzia, wykonanie i refleksja.</p>
+            <div class="card-preview">
+                <div class="preview-cycle">
+                    <div></div><div></div><div></div><div></div>
+                </div>
+            </div>
+        </a>
+
+        <a href="security.html" class="card">
+            <div class="card-icon">!</div>
+            <h2>Bezpieczeństwo LLM</h2>
+            <p>Halucynacje, prompt injection i guardrails - jak budować bezpieczne aplikacje.</p>
+            <div class="card-preview">
+                <div class="preview-shield"></div>
+            </div>
+        </a>
+
+        <a href="api.html" class="card">
+            <div class="card-icon">{}</div>
+            <h2>LLM przez API</h2>
+            <p>Struktura zapytań, role systemowe i function calling w praktyce.</p>
+            <div class="card-preview">
+                <div class="preview-code">
+                    {"role": "system"}<br>
+                    {"role": "user"}
+                </div>
+            </div>
+        </a>
+    </main>
+
+    <footer>
+        Interaktywny przewodnik po Large Language Models
+    </footer>
+</body>
+</html>
