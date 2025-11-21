@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametry Generowania - Anatomia LLM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        nav {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e0e0e0;
+            background: #fff;
+        }
+        nav a {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        nav a:hover { color: #000; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+        }
+        .intro {
+            color: #666;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+        .section {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .section h2 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        .controls {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .control-group {
+            display: grid;
+            grid-template-columns: 120px 1fr 60px;
+            align-items: center;
+            gap: 1rem;
+        }
+        .control-group label {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #e0e0e0;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #333;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .control-group .value {
+            font-family: monospace;
+            font-size: 0.9rem;
+            text-align: right;
+            color: #666;
+        }
+        .description {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 0.25rem;
+            grid-column: 2 / 4;
+        }
+        .probability-viz {
+            margin-top: 2rem;
+        }
+        .prob-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .prob-header h3 {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .prompt-text {
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            border-radius: 4px;
+        }
+        .prob-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .prob-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .prob-word {
+            width: 100px;
+            font-size: 0.9rem;
+            text-align: right;
+        }
+        .prob-fill-container {
+            flex: 1;
+            height: 24px;
+            background: #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+        .prob-fill {
+            height: 100%;
+            background: #333;
+            transition: width 0.3s ease;
+        }
+        .prob-fill.selected {
+            background: #000;
+        }
+        .prob-percent {
+            width: 50px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .output-area {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+        .output-area h3 {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        .generated-text {
+            font-family: monospace;
+            background: #f8f8f8;
+            padding: 1rem;
+            min-height: 100px;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            border: 1px solid #eee;
+        }
+        .generated-text .word {
+            padding: 2px 4px;
+            border-radius: 2px;
+            cursor: help;
+        }
+        .generated-text .word:hover {
+            background: #e8e8e8;
+        }
+        button {
+            padding: 0.75rem 1.5rem;
+            background: #333;
+            color: #fff;
+            border: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 1rem;
+        }
+        button:hover { background: #000; }
+        .explanation {
+            background: #f8f8f8;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-left: 3px solid #ddd;
+        }
+        .explanation h3 {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        .explanation p {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .comparison-box {
+            padding: 1rem;
+            background: #fff;
+            border: 1px solid #ddd;
+        }
+        .comparison-box h4 {
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        .comparison-box p {
+            font-size: 0.8rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">← Powrót do strony głównej</a>
+    </nav>
+
+    <div class="container">
+        <h1>Parametry Generowania</h1>
+        <p class="intro">Temperature, top-p i top-k kontrolują sposób wyboru kolejnego tokenu. Wpływają na kreatywność, spójność i przewidywalność odpowiedzi.</p>
+
+        <div class="section">
+            <h2>Dostosuj parametry</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Temperature</label>
+                    <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                    <span class="value" id="tempValue">0.7</span>
+                </div>
+                <p class="description">Niska = deterministyczne, Wysoka = kreatywne/losowe</p>
+
+                <div class="control-group">
+                    <label>Top-p</label>
+                    <input type="range" id="topp" min="0" max="1" step="0.05" value="0.9">
+                    <span class="value" id="toppValue">0.9</span>
+                </div>
+                <p class="description">Nucleus sampling - rozważa tokeny sumujące się do p prawdopodobieństwa</p>
+
+                <div class="control-group">
+                    <label>Top-k</label>
+                    <input type="range" id="topk" min="1" max="50" step="1" value="40">
+                    <span class="value" id="topkValue">40</span>
+                </div>
+                <p class="description">Rozważa tylko k najbardziej prawdopodobnych tokenów</p>
+            </div>
+
+            <div class="probability-viz">
+                <div class="prob-header">
+                    <h3>Rozkład prawdopodobieństwa następnego słowa</h3>
+                    <span class="prompt-text">Prompt: "Słońce świeci"</span>
+                </div>
+                <div class="prob-bars" id="probBars"></div>
+            </div>
+
+            <div class="output-area">
+                <h3>Symulacja generowania</h3>
+                <button onclick="generate()">Generuj tekst</button>
+                <div class="generated-text" id="generatedText">Kliknij "Generuj tekst" aby zobaczyć wynik...</div>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h3>Jak działają parametry?</h3>
+            <div class="comparison">
+                <div class="comparison-box">
+                    <h4>Temperature = 0</h4>
+                    <p>Model zawsze wybiera najbardziej prawdopodobny token. Wyniki są powtarzalne i precyzyjne, ale mogą być nudne.</p>
+                </div>
+                <div class="comparison-box">
+                    <h4>Temperature = 1+</h4>
+                    <p>Rozkład prawdopodobieństwa jest bardziej "płaski". Model częściej wybiera mniej oczywiste opcje - więcej kreatywności, ale ryzyko halucynacji.</p>
+                </div>
+            </div>
+            <p style="margin-top:1rem;"><strong>Top-p (nucleus sampling):</strong> Zamiast brać k tokenów, bierze najmniejszy zbiór tokenów, których łączne prawdopodobieństwo przekracza p.</p>
+            <p><strong>Top-k:</strong> Ogranicza wybór do k najbardziej prawdopodobnych tokenów, niezależnie od ich rzeczywistego prawdopodobieństwa.</p>
+        </div>
+    </div>
+
+    <script>
+        const words = [
+            { word: 'jasno', baseProb: 0.35 },
+            { word: 'mocno', baseProb: 0.25 },
+            { word: 'pięknie', baseProb: 0.15 },
+            { word: 'dzisiaj', baseProb: 0.10 },
+            { word: 'ciepło', baseProb: 0.08 },
+            { word: 'złoto', baseProb: 0.04 },
+            { word: 'magicznie', baseProb: 0.02 },
+            { word: 'niezwykle', baseProb: 0.01 }
+        ];
+
+        const continuations = {
+            low: [
+                "jasno i ciepło dzisiaj.",
+                "jasno na niebie.",
+                "jasno, więc wyjdę na spacer."
+            ],
+            medium: [
+                "pięknie nad miastem, rozświetlając ulice złotym blaskiem.",
+                "mocno, a ptaki śpiewają w koronach drzew.",
+                "jasno dzisiaj - idealny dzień na wycieczkę."
+            ],
+            high: [
+                "magicznie, jakby chciało nam opowiedzieć starożytną historię o złotych krainach.",
+                "niezwykle intensywnie, malując świat w odcieniach, których nazw jeszcze nie wymyślono.",
+                "złoto i szmaragdowo, a cienie tańczą walca na murach zamku wspomnień."
+            ]
+        };
+
+        function softmax(logits, temperature) {
+            if (temperature === 0) temperature = 0.001;
+            const scaled = logits.map(l => l / temperature);
+            const maxVal = Math.max(...scaled);
+            const exps = scaled.map(s => Math.exp(s - maxVal));
+            const sum = exps.reduce((a, b) => a + b, 0);
+            return exps.map(e => e / sum);
+        }
+
+        function updateVisualization() {
+            const temp = parseFloat(document.getElementById('temperature').value);
+            const topp = parseFloat(document.getElementById('topp').value);
+            const topk = parseInt(document.getElementById('topk').value);
+
+            document.getElementById('tempValue').textContent = temp.toFixed(1);
+            document.getElementById('toppValue').textContent = topp.toFixed(2);
+            document.getElementById('topkValue').textContent = topk;
+
+            // Convert base probs to logits and apply temperature
+            const logits = words.map(w => Math.log(w.baseProb + 0.001));
+            const probs = softmax(logits, temp);
+
+            // Apply top-k filtering
+            let filteredProbs = probs.map((p, i) => ({ prob: p, idx: i }));
+            filteredProbs.sort((a, b) => b.prob - a.prob);
+            const topkSet = new Set(filteredProbs.slice(0, topk).map(x => x.idx));
+
+            // Apply top-p filtering
+            let cumsum = 0;
+            const toppSet = new Set();
+            for (const item of filteredProbs) {
+                if (cumsum < topp) {
+                    toppSet.add(item.idx);
+                    cumsum += item.prob;
+                }
+            }
+
+            // Render bars
+            const container = document.getElementById('probBars');
+            container.innerHTML = '';
+
+            const maxProb = Math.max(...probs);
+            words.forEach((word, i) => {
+                const isInTopK = topkSet.has(i);
+                const isInTopP = toppSet.has(i);
+                const isActive = isInTopK && isInTopP;
+
+                const bar = document.createElement('div');
+                bar.className = 'prob-bar';
+                bar.innerHTML = `
+                    <span class="prob-word" style="opacity:${isActive ? 1 : 0.3}">${word.word}</span>
+                    <div class="prob-fill-container">
+                        <div class="prob-fill ${isActive ? 'selected' : ''}"
+                             style="width:${(probs[i] / maxProb) * 100}%;opacity:${isActive ? 1 : 0.2}">
+                        </div>
+                    </div>
+                    <span class="prob-percent">${(probs[i] * 100).toFixed(1)}%</span>
+                `;
+                container.appendChild(bar);
+            });
+        }
+
+        function generate() {
+            const temp = parseFloat(document.getElementById('temperature').value);
+            let category;
+            if (temp < 0.5) category = 'low';
+            else if (temp < 1.2) category = 'medium';
+            else category = 'high';
+
+            const options = continuations[category];
+            const text = options[Math.floor(Math.random() * options.length)];
+
+            const container = document.getElementById('generatedText');
+            container.innerHTML = '<span style="color:#888">Słońce świeci </span>';
+
+            // Animate word by word
+            const wordsArray = text.split(' ');
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < wordsArray.length) {
+                    const span = document.createElement('span');
+                    span.className = 'word';
+                    span.textContent = wordsArray[i] + ' ';
+                    span.title = `Prawdopodobieństwo: ${(Math.random() * 30 + 10).toFixed(1)}%`;
+                    container.appendChild(span);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 150);
+        }
+
+        document.getElementById('temperature').addEventListener('input', updateVisualization);
+        document.getElementById('topp').addEventListener('input', updateVisualization);
+        document.getElementById('topk').addEventListener('input', updateVisualization);
+
+        updateVisualization();
+    </script>
+</body>
+</html>

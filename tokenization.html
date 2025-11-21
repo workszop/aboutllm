@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokenizacja i Embedding - Anatomia LLM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        nav {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e0e0e0;
+            background: #fff;
+        }
+        nav a {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        nav a:hover { color: #000; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+        }
+        .intro {
+            color: #666;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+        .section {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .section h2 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .input-area {
+            margin-bottom: 1.5rem;
+        }
+        .input-area textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.2s;
+        }
+        .input-area textarea:focus {
+            outline: none;
+            border-color: #999;
+        }
+        .tokens-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            min-height: 50px;
+            padding: 1rem;
+            background: #f8f8f8;
+            border: 1px solid #eee;
+        }
+        .token {
+            background: #e8e8e8;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .token:hover {
+            background: #ddd;
+            border-color: #bbb;
+        }
+        .token.selected {
+            background: #333;
+            color: #fff;
+        }
+        .stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .embedding-viz {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        .vector-display {
+            flex: 1;
+            font-family: monospace;
+            font-size: 0.8rem;
+            background: #f8f8f8;
+            padding: 1rem;
+            border: 1px solid #eee;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .vector-bars {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+        }
+        .bar-label {
+            width: 30px;
+            color: #999;
+        }
+        .bar {
+            height: 12px;
+            background: #333;
+            transition: width 0.3s ease;
+        }
+        .bar-value {
+            width: 50px;
+            color: #666;
+            font-family: monospace;
+        }
+        .explanation {
+            background: #f8f8f8;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-left: 3px solid #ddd;
+        }
+        .explanation h3 {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        .explanation p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #999;
+            font-size: 0.85rem;
+        }
+        .step.active { color: #333; }
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border: 1px solid currentColor;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+        .step.active .step-num {
+            background: #333;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">← Powrót do strony głównej</a>
+    </nav>
+
+    <div class="container">
+        <h1>Tokenizacja i Embedding</h1>
+        <p class="intro">Model LLM nie rozumie tekstu bezpośrednio. Najpierw dzieli go na tokeny, a następnie zamienia każdy token na wektor liczbowy (embedding).</p>
+
+        <div class="step-indicator">
+            <div class="step active" id="step1"><span class="step-num">1</span> Tekst</div>
+            <div class="step" id="step2"><span class="step-num">2</span> Tokenizacja</div>
+            <div class="step" id="step3"><span class="step-num">3</span> Embedding</div>
+        </div>
+
+        <div class="section">
+            <h2>Wpisz tekst do tokenizacji</h2>
+            <div class="input-area">
+                <textarea id="inputText" placeholder="Wpisz dowolny tekst...">Duże modele językowe są fascynujące!</textarea>
+            </div>
+            <div class="tokens-display" id="tokensDisplay"></div>
+            <div class="stats">
+                <span>Znaki: <strong id="charCount">0</strong></span>
+                <span>Tokeny: <strong id="tokenCount">0</strong></span>
+                <span>Stosunek: <strong id="ratio">0</strong> znaków/token</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Embedding wybranego tokenu</h2>
+            <p style="color:#666;font-size:0.9rem;margin-bottom:1rem;">Kliknij na token powyżej, aby zobaczyć jego reprezentację wektorową (symulacja).</p>
+            <div class="embedding-viz">
+                <div class="vector-display" id="vectorDisplay">
+                    Wybierz token...
+                </div>
+                <div class="vector-bars" id="vectorBars"></div>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h3>Jak to działa?</h3>
+            <p><strong>Tokenizacja</strong> dzieli tekst na mniejsze jednostki. Mogą to być całe słowa, części słów (np. "fascynuj" + "ące") lub pojedyncze znaki. Popularne algorytmy to BPE (Byte-Pair Encoding) i WordPiece.</p>
+            <p style="margin-top:0.5rem;"><strong>Embedding</strong> zamienia każdy token na wektor (listę liczb), np. 768 lub 1536 wymiarów. Podobne znaczeniowo słowa mają podobne wektory - "król" i "królowa" będą blisko siebie w przestrzeni wektorowej.</p>
+        </div>
+    </div>
+
+    <script>
+        const inputText = document.getElementById('inputText');
+        const tokensDisplay = document.getElementById('tokensDisplay');
+        const charCount = document.getElementById('charCount');
+        const tokenCount = document.getElementById('tokenCount');
+        const ratio = document.getElementById('ratio');
+        const vectorDisplay = document.getElementById('vectorDisplay');
+        const vectorBars = document.getElementById('vectorBars');
+
+        // Simple tokenizer simulation (BPE-like)
+        function tokenize(text) {
+            if (!text) return [];
+            const tokens = [];
+            const words = text.split(/(\s+|[.,!?;:])/);
+
+            words.forEach(word => {
+                if (!word) return;
+                if (/^\s+$/.test(word)) {
+                    tokens.push(word);
+                } else if (/^[.,!?;:]$/.test(word)) {
+                    tokens.push(word);
+                } else if (word.length > 6) {
+                    // Split longer words
+                    const mid = Math.ceil(word.length / 2);
+                    tokens.push(word.slice(0, mid));
+                    tokens.push(word.slice(mid));
+                } else {
+                    tokens.push(word);
+                }
+            });
+            return tokens.filter(t => t.length > 0);
+        }
+
+        function generateEmbedding(token) {
+            // Generate pseudo-random but deterministic embedding
+            const seed = token.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+            const embedding = [];
+            for (let i = 0; i < 12; i++) {
+                const val = Math.sin(seed * (i + 1) * 0.1) * 0.5 + Math.cos(seed * (i + 2) * 0.05) * 0.5;
+                embedding.push(parseFloat(val.toFixed(4)));
+            }
+            return embedding;
+        }
+
+        function updateTokens() {
+            const text = inputText.value;
+            const tokens = tokenize(text);
+
+            tokensDisplay.innerHTML = '';
+            tokens.forEach((token, i) => {
+                const span = document.createElement('span');
+                span.className = 'token';
+                span.textContent = token.replace(/ /g, '␣');
+                span.onclick = () => selectToken(token, span);
+                tokensDisplay.appendChild(span);
+            });
+
+            charCount.textContent = text.length;
+            tokenCount.textContent = tokens.length;
+            ratio.textContent = tokens.length > 0 ? (text.length / tokens.length).toFixed(1) : '0';
+
+            // Update step indicators
+            document.getElementById('step2').classList.add('active');
+        }
+
+        function selectToken(token, element) {
+            document.querySelectorAll('.token').forEach(t => t.classList.remove('selected'));
+            element.classList.add('selected');
+
+            const embedding = generateEmbedding(token);
+
+            vectorDisplay.innerHTML = `Token: "${token}"<br><br>[${embedding.join(',<br> ')}]<br><br>... (768 wymiarów w rzeczywistości)`;
+
+            vectorBars.innerHTML = '';
+            embedding.forEach((val, i) => {
+                const row = document.createElement('div');
+                row.className = 'bar-row';
+                const width = Math.abs(val) * 100;
+                row.innerHTML = `
+                    <span class="bar-label">d${i}</span>
+                    <div class="bar" style="width:${width}px;background:${val >= 0 ? '#333' : '#999'}"></div>
+                    <span class="bar-value">${val.toFixed(3)}</span>
+                `;
+                vectorBars.appendChild(row);
+            });
+
+            document.getElementById('step3').classList.add('active');
+        }
+
+        inputText.addEventListener('input', updateTokens);
+        updateTokens();
+    </script>
+</body>
+</html>

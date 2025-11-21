@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM przez API - Anatomia LLM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        nav {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e0e0e0;
+            background: #fff;
+        }
+        nav a { color: #666; text-decoration: none; font-size: 0.9rem; }
+        nav a:hover { color: #000; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
+        h1 { font-size: 2rem; font-weight: 400; margin-bottom: 1rem; }
+        .intro { color: #666; margin-bottom: 3rem; font-size: 1.1rem; }
+        .section {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .section h2 { font-size: 1.1rem; font-weight: 500; margin-bottom: 1.5rem; }
+
+        .api-builder {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        .builder-panel h3 {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        .message-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .message-item {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: #f8f8f8;
+            border: 1px solid #e8e8e8;
+            font-size: 0.85rem;
+        }
+        .message-item.system { border-left: 3px solid #666; }
+        .message-item.user { border-left: 3px solid #333; }
+        .message-item.assistant { border-left: 3px solid #999; }
+        .message-role {
+            font-weight: 500;
+            min-width: 70px;
+            color: #666;
+        }
+        .message-content {
+            flex: 1;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+        .add-message {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .add-message select, .add-message input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            font-size: 0.85rem;
+        }
+        .add-message input { flex: 1; }
+        .add-message select { width: 100px; }
+        button {
+            padding: 0.5rem 1rem;
+            background: #333;
+            color: #fff;
+            border: none;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        button:hover { background: #000; }
+        button.secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        button.secondary:hover { background: #e0e0e0; }
+
+        .json-preview {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .json-preview .key { color: #9cdcfe; }
+        .json-preview .string { color: #ce9178; }
+        .json-preview .number { color: #b5cea8; }
+
+        .roles-explanation {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .role-box {
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .role-box:hover { border-color: #999; }
+        .role-box.active { border-color: #333; background: #f8f8f8; }
+        .role-box h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .role-badge {
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            background: #e8e8e8;
+            border-radius: 2px;
+        }
+        .role-box p { font-size: 0.8rem; color: #666; }
+
+        .tool-calling {
+            margin-top: 2rem;
+        }
+        .tool-flow {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        .flow-box {
+            padding: 1rem;
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+            min-width: 120px;
+        }
+        .flow-box.active { background: #333; color: #fff; border-color: #333; }
+        .flow-box h4 { font-size: 0.8rem; margin-bottom: 0.25rem; }
+        .flow-box p { font-size: 0.7rem; opacity: 0.7; }
+        .flow-arrow { color: #ccc; font-size: 1.2rem; }
+
+        .tool-demo {
+            background: #f8f8f8;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        .tool-demo pre {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 1rem;
+            font-size: 0.75rem;
+            overflow-x: auto;
+            margin-top: 0.5rem;
+        }
+
+        .explanation {
+            background: #f8f8f8;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-left: 3px solid #ddd;
+        }
+        .explanation h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .explanation p { font-size: 0.9rem; color: #666; margin-bottom: 0.5rem; }
+
+        @media (max-width: 768px) {
+            .api-builder { grid-template-columns: 1fr; }
+            .roles-explanation { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav><a href="index.html">← Powrót do strony głównej</a></nav>
+
+    <div class="container">
+        <h1>LLM przez API</h1>
+        <p class="intro">Większość LLM dostępna jest przez REST API. Zrozumienie struktury zapytań, ról i function calling jest kluczowe do budowania aplikacji.</p>
+
+        <div class="section">
+            <h2>Role w konwersacji</h2>
+            <div class="roles-explanation">
+                <div class="role-box" onclick="selectRole('system')">
+                    <h4><span class="role-badge">system</span></h4>
+                    <p>Instrukcje dla modelu, persona, ograniczenia. Ustawia kontekst całej rozmowy.</p>
+                </div>
+                <div class="role-box" onclick="selectRole('user')">
+                    <h4><span class="role-badge">user</span></h4>
+                    <p>Wiadomości od użytkownika - pytania, polecenia, dane wejściowe.</p>
+                </div>
+                <div class="role-box" onclick="selectRole('assistant')">
+                    <h4><span class="role-badge">assistant</span></h4>
+                    <p>Odpowiedzi modelu. Można też użyć do "priming" - podpowiedzi jak odpowiadać.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Budowanie zapytania API</h2>
+            <div class="api-builder">
+                <div class="builder-panel">
+                    <h3>Wiadomości</h3>
+                    <div class="message-list" id="messageList">
+                        <div class="message-item system">
+                            <span class="message-role">system</span>
+                            <span class="message-content">Jesteś pomocnym asystentem.</span>
+                        </div>
+                        <div class="message-item user">
+                            <span class="message-role">user</span>
+                            <span class="message-content">Czym jest tokenizacja?</span>
+                        </div>
+                    </div>
+                    <div class="add-message">
+                        <select id="newRole">
+                            <option value="system">system</option>
+                            <option value="user" selected>user</option>
+                            <option value="assistant">assistant</option>
+                        </select>
+                        <input type="text" id="newContent" placeholder="Treść wiadomości...">
+                        <button onclick="addMessage()">+</button>
+                    </div>
+                    <div style="margin-top:1rem;">
+                        <button class="secondary" onclick="clearMessages()">Wyczyść</button>
+                        <button onclick="updatePreview()">Odśwież JSON</button>
+                    </div>
+                </div>
+                <div class="builder-panel">
+                    <h3>Podgląd JSON</h3>
+                    <div class="json-preview" id="jsonPreview"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Function / Tool Calling</h2>
+            <p style="color:#666;font-size:0.9rem;margin-bottom:1rem;">Model może "wywoływać" funkcje zdefiniowane przez programistę. To podstawa agentów i automatyzacji.</p>
+
+            <div class="tool-flow">
+                <div class="flow-box" id="fc1">
+                    <h4>1. Zapytanie</h4>
+                    <p>+ definicje funkcji</p>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box" id="fc2">
+                    <h4>2. Model decyduje</h4>
+                    <p>wywołać funkcję?</p>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box" id="fc3">
+                    <h4>3. Function call</h4>
+                    <p>nazwa + argumenty</p>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box" id="fc4">
+                    <h4>4. Wykonanie</h4>
+                    <p>Twój kod</p>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-box" id="fc5">
+                    <h4>5. Wynik</h4>
+                    <p>do modelu</p>
+                </div>
+            </div>
+
+            <button onclick="animateToolCall()">Animuj proces</button>
+
+            <div class="tool-demo">
+                <strong>Przykład definicji funkcji:</strong>
+                <pre>{
+  "name": "get_weather",
+  "description": "Pobiera aktualną pogodę dla miasta",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "city": { "type": "string", "description": "Nazwa miasta" }
+    },
+    "required": ["city"]
+  }
+}</pre>
+                <strong style="margin-top:1rem;display:block;">Model odpowiada:</strong>
+                <pre>{
+  "function_call": {
+    "name": "get_weather",
+    "arguments": "{\"city\": \"Warszawa\"}"
+  }
+}</pre>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h3>Najlepsze praktyki API</h3>
+            <p><strong>Autoryzacja:</strong> Używaj kluczy API z ograniczonymi uprawnieniami. Nie umieszczaj ich w kodzie frontendowym.</p>
+            <p><strong>Rate limiting:</strong> Respektuj limity API. Implementuj exponential backoff przy błędach 429.</p>
+            <p><strong>Streaming:</strong> Dla lepszego UX używaj Server-Sent Events do strumieniowania odpowiedzi token po tokenie.</p>
+            <p><strong>Koszty:</strong> Monitoruj zużycie tokenów. System prompt jest wysyłany z każdym zapytaniem!</p>
+        </div>
+    </div>
+
+    <script>
+        let messages = [
+            { role: 'system', content: 'Jesteś pomocnym asystentem.' },
+            { role: 'user', content: 'Czym jest tokenizacja?' }
+        ];
+
+        function updatePreview() {
+            const json = {
+                model: "gpt-4",
+                messages: messages,
+                temperature: 0.7,
+                max_tokens: 1000
+            };
+
+            const preview = document.getElementById('jsonPreview');
+            preview.innerHTML = syntaxHighlight(JSON.stringify(json, null, 2));
+        }
+
+        function syntaxHighlight(json) {
+            return json
+                .replace(/(".*?"):/g, '<span class="key">$1</span>:')
+                .replace(/: (".*?")/g, ': <span class="string">$1</span>')
+                .replace(/: (\d+\.?\d*)/g, ': <span class="number">$1</span>');
+        }
+
+        function renderMessages() {
+            const list = document.getElementById('messageList');
+            list.innerHTML = messages.map(m => `
+                <div class="message-item ${m.role}">
+                    <span class="message-role">${m.role}</span>
+                    <span class="message-content">${m.content}</span>
+                </div>
+            `).join('');
+        }
+
+        function addMessage() {
+            const role = document.getElementById('newRole').value;
+            const content = document.getElementById('newContent').value;
+            if (content.trim()) {
+                messages.push({ role, content });
+                renderMessages();
+                updatePreview();
+                document.getElementById('newContent').value = '';
+            }
+        }
+
+        function clearMessages() {
+            messages = [{ role: 'system', content: 'Jesteś pomocnym asystentem.' }];
+            renderMessages();
+            updatePreview();
+        }
+
+        function selectRole(role) {
+            document.querySelectorAll('.role-box').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        async function animateToolCall() {
+            const steps = ['fc1', 'fc2', 'fc3', 'fc4', 'fc5'];
+            document.querySelectorAll('.flow-box').forEach(b => b.classList.remove('active'));
+
+            for (const step of steps) {
+                document.getElementById(step).classList.add('active');
+                await new Promise(r => setTimeout(r, 600));
+            }
+        }
+
+        updatePreview();
+    </script>
+</body>
+</html>
