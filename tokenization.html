@@ -243,9 +243,9 @@
         <div class="section">
             <h2>3. Base Model vs Instruct Model</h2>
             <div class="example-selector">
-                <button class="example-btn active" onclick="showExample(0)">Pytanie o kod</button>
-                <button class="example-btn" onclick="showExample(1)">Prośba o pomoc</button>
-                <button class="example-btn" onclick="showExample(2)">Dokończ tekst</button>
+                <button class="example-btn active" onclick="showExample(0)">Pytanie o programowanie</button>
+                <button class="example-btn" onclick="showExample(1)">Pytanie faktograficzne</button>
+                <button class="example-btn" onclick="showExample(2)">Prośba o tłumaczenie</button>
             </div>
             <div class="comparison-panels">
                 <div class="panel">
@@ -443,19 +443,19 @@
         // Base vs Instruct
         const examples = [
             {
-                prompt: "Napisz funkcję w Python sortującą listę",
-                base: "Napisz funkcję w Python sortującą listę\n\ndef sort_list(lst):\n    return sorted(lst)\n\ndef sort_list_desc(lst):\n    return sorted(lst, reverse=True)\n\n# Przykład użycia:\nnumbers = [3, 1, 4, 1, 5, 9, 2, 6]\nprint(sort_list(numbers))\n\n# Inne metody sortowania:\n# 1. Bubble sort\n# 2. Quick sort\n# 3. Merge sort...",
-                instruct: "Oto funkcja w Pythonie sortująca listę:\n\n```python\ndef sort_list(lst):\n    return sorted(lst)\n```\n\nMożesz też sortować malejąco:\n```python\ndef sort_descending(lst):\n    return sorted(lst, reverse=True)\n```\n\nCzy potrzebujesz wyjaśnienia lub innej wersji?"
+                prompt: "Jak zrobić pętlę w Pythonie?",
+                base: "Jak zrobić pętlę w Pythonie? To pytanie często pojawia się na forach programistycznych. Pętle są fundamentalnym elementem programowania. W Pythonie, podobnie jak w innych językach, pętle pozwalają na wielokrotne wykonywanie kodu.\n\nWiele osób uczy się programowania właśnie od pętli. Stack Overflow ma tysiące pytań na ten temat. Dokumentacja Pythona opisuje dwa rodzaje pętli: for i while...",
+                instruct: "W Pythonie masz dwa główne typy pętli:\n\n**1. Pętla `for` (iteracja po elementach):**\n```python\nfor i in range(5):\n    print(i)  # wypisze 0,1,2,3,4\n```\n\n**2. Pętla `while` (dopóki warunek prawdziwy):**\n```python\ni = 0\nwhile i < 5:\n    print(i)\n    i += 1\n```\n\nKtóra wersja Cię interesuje?"
             },
             {
-                prompt: "Pomóż mi zrozumieć rekurencję",
-                base: "Pomóż mi zrozumieć rekurencję\n\nRekurencja to technika programowania, w której funkcja wywołuje samą siebie. Jest szeroko stosowana w informatyce do rozwiązywania problemów, które można podzielić na mniejsze podproblemy tego samego typu.\n\nPrzykłady rekurencji:\n1. Silnia\n2. Fibonacci\n3. Przeszukiwanie drzewa\n4. Sortowanie...",
-                instruct: "**Rekurencja** to technika, w której funkcja wywołuje samą siebie.\n\n**Prosty przykład - silnia:**\n```python\ndef silnia(n):\n    if n <= 1:  # Przypadek bazowy\n        return 1\n    return n * silnia(n - 1)  # Wywołanie rekurencyjne\n```\n\n**Kluczowe elementy:**\n1. **Przypadek bazowy** - warunek stopu\n2. **Krok rekurencyjny** - wywołanie z mniejszym problemem\n\nCzy chcesz więcej przykładów?"
+                prompt: "Stolica Francji to",
+                base: "Stolica Francji to Paryż, jedno z najpiękniejszych miast świata. Miasto liczące ponad 2 miliony mieszkańców jest centrum kulturalnym i gospodarczym kraju. Paryż słynie z Wieży Eiffla, Luwru, katedry Notre-Dame i Łuku Triumfalnego.\n\nHistoria Paryża sięga czasów rzymskich, kiedy miasto nosiło nazwę Lutetia. Przez wieki Paryż był...",
+                instruct: "Stolica Francji to **Paryż**.\n\n📍 Położenie: Północna Francja, nad Sekwaną\n👥 Ludność: ~2,2 mln (12 mln w aglomeracji)\n🏛️ Znane zabytki: Wieża Eiffla, Luwr, Notre-Dame\n\nCzy potrzebujesz więcej informacji o Paryżu?"
             },
             {
-                prompt: "Polska jest krajem w Europie",
-                base: "Polska jest krajem w Europie środkowo-wschodniej. Graniczy z Niemcami na zachodzie, Czechami i Słowacją na południu, Ukrainą i Białorusią na wschodzie oraz Litwą i Rosją (obwód kaliningradzki) na północy. Stolica Polski to Warszawa, a największe miasta to Kraków, Łódź, Wrocław i Poznań. Polska ma bogatą historię...",
-                instruct: "Tak, Polska to kraj w Europie Środkowo-Wschodniej. Czy masz jakieś konkretne pytanie o Polskę? Mogę pomóc z informacjami o:\n- Geografii i klimacie\n- Historii\n- Kulturze i tradycjach\n- Turystyce\n- Gospodarce\n\nO czym chciałbyś się dowiedzieć?"
+                prompt: "Przetłumacz 'Dzień dobry' na angielski",
+                base: "Przetłumacz 'Dzień dobry' na angielski - to częste zapytanie w tłumaczeniach. Polskie powitania różnią się od angielskich pod względem formalności.\n\nPodobne frazy:\n- 'Cześć' - Hello/Hi\n- 'Do widzenia' - Goodbye\n- 'Dobranoc' - Good night\n\nWarto znać różne formy powitań w różnych językach. W angielskim istnieje wiele sposobów na przywitanie się...",
+                instruct: "**Dzień dobry** tłumaczy się jako:\n\n✅ **Good morning** - rano/przed południem\n✅ **Good afternoon** - po południu\n✅ **Hello** - neutralnie, o każdej porze\n\nW nieformalnych sytuacjach możesz użyć po prostu **Hi**.\n\nPotrzebujesz tłumaczenia innych zwrotów?"
             }
         ];
 
