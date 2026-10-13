@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prompt Engineering - Anatomia LLM</title>
+    <title>Prompt engineering – Anatomia LLM</title>
     <link rel="icon" type="image/png" href="assets/edulab-mark-ink.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -100,7 +100,7 @@
 </head>
 <body class="edu">
     <header class="edu-header"><div class="edu-header-inner">
-        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM - strona główna">
+        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM – strona główna">
             <img class="edu-logo" src="assets/edulab-mark-ink.png" alt="edulab">
             <span class="edu-wordmark">edulab</span>
         </a>
@@ -115,8 +115,8 @@
     </div></header>
 
     <header class="page-head">
-        <h1 class="app-title">Prompt Engineering</h1>
-        <p class="edu-lead">Parametry generowania, struktura odpowiedzi i scenariusze pracy z LLM. Naucz się kontrolować zachowanie modelu.</p>
+        <h1 class="app-title">Prompt engineering</h1>
+        <p class="edu-lead">Parametry generowania, wymuszanie struktury odpowiedzi i trzy sposoby pracy z LLM. Każde z tych ustawień zmienia zachowanie modelu.</p>
     </header>
 
     <main class="bands">
@@ -128,36 +128,36 @@
                         <div class="control-row">
                             <label class="field-label" for="temperature">Temperature <span class="value-chip" id="tempValue">0.7</span></label>
                             <input class="edu-range" type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
-                            <p class="description">Niska = deterministyczne, Wysoka = kreatywne/losowe</p>
+                            <p class="description">Niska: odpowiedzi przewidywalne i powtarzalne. Wysoka: bardziej różnorodne i losowe.</p>
                         </div>
                         <div class="control-row">
                             <label class="field-label" for="topp">Top-p <span class="value-chip" id="toppValue">0.9</span></label>
                             <input class="edu-range" type="range" id="topp" min="0" max="1" step="0.05" value="0.9">
-                            <p class="description">Nucleus sampling - rozważa tokeny sumujące się do p prawdopodobieństwa</p>
+                            <p class="description">Nucleus sampling: model losuje tylko spośród najbardziej prawdopodobnych tokenów, których łączne prawdopodobieństwo sięga p.</p>
                         </div>
                         <div class="control-row">
                             <label class="field-label" for="topk">Top-k <span class="value-chip" id="topkValue">40</span></label>
                             <input class="edu-range" type="range" id="topk" min="1" max="50" step="1" value="40">
-                            <p class="description">Rozważa tylko k najbardziej prawdopodobnych tokenów</p>
+                            <p class="description">Model losuje tylko spośród k najbardziej prawdopodobnych tokenów.</p>
                         </div>
                         <div class="control-row">
                             <label class="field-label" for="maxtokens">Max tokens <span class="value-chip" id="maxValue">256</span></label>
                             <input class="edu-range" type="range" id="maxtokens" min="10" max="4096" step="10" value="256">
-                            <p class="description">Maksymalna długość odpowiedzi w tokenach</p>
+                            <p class="description">Górny limit długości odpowiedzi w tokenach. Po jego osiągnięciu tekst jest ucinany.</p>
                         </div>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-head"><h4>Rozkład prawdopodobieństwa następnego słowa</h4></div>
                     <div class="card-body"><div class="prob-bars" id="probBars"></div></div>
-                    <div class="card-foot"><span class="prompt-text">Prompt: "Słońce świeci"</span></div>
+                    <div class="card-foot"><span class="prompt-text">Prompt: „Słońce świeci”</span></div>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-head"><h4>Symulacja generowania</h4></div>
                 <div class="card-body">
-                    <div class="data-panel generated-text" id="generatedText" aria-live="polite">Kliknij "Generuj tekst" aby zobaczyć wynik...</div>
+                    <div class="data-panel generated-text" id="generatedText" aria-live="polite">Kliknij „Generuj tekst”, aby zobaczyć wynik.</div>
                 </div>
                 <div class="card-foot">
                     <button class="btn" onclick="generate()">Generuj tekst</button>
@@ -165,15 +165,15 @@
             </div>
 
             <div class="callout edu-block">
-                <h3>Jak działają parametry?</h3>
+                <h3>Jak działa temperature</h3>
                 <div class="comparison">
                     <div class="comparison-box">
                         <h4>Temperature = 0</h4>
-                        <p>Model zawsze wybiera najbardziej prawdopodobny token. Wyniki są powtarzalne i precyzyjne, ale mogą być nudne.</p>
+                        <p>Model wybiera najbardziej prawdopodobny token. Odpowiedzi są przewidywalne i prawie zawsze takie same, ale bywają monotonne. Pełnej powtarzalności to nie gwarantuje: drobne różnice w obliczeniach po stronie serwera potrafią zmienić wynik.</p>
                     </div>
                     <div class="comparison-box">
                         <h4>Temperature = 1+</h4>
-                        <p>Rozkład prawdopodobieństwa jest bardziej "płaski". Model częściej wybiera mniej oczywiste opcje - więcej kreatywności, ale ryzyko halucynacji.</p>
+                        <p>Przy 1 model losuje z niezmienionego rozkładu, a powyżej 1 rozkład robi się bardziej „płaski”. Model częściej wybiera mniej oczywiste tokeny. Tekst jest bardziej kreatywny, ale rośnie ryzyko błędów i niespójności.</p>
                     </div>
                 </div>
             </div>
@@ -213,20 +213,20 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
                 </div>
             </div>
             <div class="callout edu-block">
-                <p><strong>Structured Output</strong> to technika wymuszania formatu odpowiedzi. Nowoczesne API (OpenAI, Anthropic) oferują tryb JSON mode, który gwarantuje poprawny JSON. Można też definiować schematy (JSON Schema) do walidacji.</p>
+                <p>API potrafią wymusić format odpowiedzi. JSON mode (np. w API OpenAI) gwarantuje składniowo poprawny JSON, ale nie pilnuje nazw pól ani typów. Structured outputs idą dalej: podajesz JSON Schema, a API tak ogranicza generowanie, że odpowiedź pasuje do schematu. Tę opcję mają m.in. OpenAI i Anthropic.</p>
             </div>
         </div></section>
 
         <section class="sec"><div class="wrap">
             <div class="sec-head"><h2>Scenariusze pracy z LLM</h2></div>
-            <p class="sec-hint">Kliknij kartę, aby zobaczyć szczegóły</p>
+            <p class="sec-hint">Kliknij kartę, aby zobaczyć szczegóły.</p>
             <div class="scenarios-grid">
                 <div class="scenario-card" role="button" tabindex="0" aria-pressed="false" onclick="flipCard(this)">
                     <div class="card-inner">
                         <div class="card-front">
                             <div class="scenario-icon" aria-hidden="true">💬</div>
-                            <h3>Chat Online</h3>
-                            <p>ChatGPT, Claude, Gemini - interfejsy webowe do konwersacji z modelami.</p>
+                            <h3>Chat online</h3>
+                            <p>ChatGPT, Claude, Gemini: aplikacje do rozmowy z modelem w przeglądarce.</p>
                         </div>
                         <div class="card-back">
                             <h4>Zalety:</h4>
@@ -239,10 +239,10 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
                             <ul>
                                 <li class="con">Dane wysyłane do chmury</li>
                                 <li class="con">Ograniczona kontrola parametrów</li>
-                                <li class="con">Limity użycia w darmowych planach</li>
+                                <li class="con">Limity użycia, zwłaszcza w darmowych planach</li>
                             </ul>
                             <h4>Dla kogo:</h4>
-                            <p class="audience">Casual users, szybkie pytania, prototypowanie</p>
+                            <p class="audience">Okazjonalni użytkownicy, szybkie pytania, prototypowanie</p>
                         </div>
                     </div>
                 </div>
@@ -252,23 +252,23 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
                         <div class="card-front">
                             <div class="scenario-icon" aria-hidden="true">🖥️</div>
                             <h3>Lokalny LLM</h3>
-                            <p>Ollama, LM Studio, llama.cpp - modele uruchamiane na własnym komputerze.</p>
+                            <p>Ollama, LM Studio, llama.cpp: modele uruchamiane na własnym komputerze.</p>
                         </div>
                         <div class="card-back">
                             <h4>Zalety:</h4>
                             <ul>
                                 <li class="pro">Pełna prywatność danych</li>
-                                <li class="pro">Brak kosztów per-token</li>
-                                <li class="pro">Pełna kontrola i customizacja</li>
+                                <li class="pro">Brak opłat za tokeny</li>
+                                <li class="pro">Pełna kontrola i możliwość dostosowania modelu</li>
                             </ul>
                             <h4>Wady:</h4>
                             <ul>
-                                <li class="con">Wymaga mocnego GPU (8GB+ VRAM)</li>
-                                <li class="con">Mniejsze modele = niższa jakość</li>
+                                <li class="con">Do płynnej pracy zwykle potrzebne GPU (8 GB+ VRAM); małe modele działają też na CPU</li>
+                                <li class="con">Modele mieszczące się na domowym sprzęcie są słabsze od największych modeli w chmurze</li>
                                 <li class="con">Wymaga konfiguracji</li>
                             </ul>
                             <h4>Dla kogo:</h4>
-                            <p class="audience">Developerzy, firmy z wrażliwymi danymi, enthusiasts</p>
+                            <p class="audience">Programiści, firmy z wrażliwymi danymi, hobbyści</p>
                         </div>
                     </div>
                 </div>
@@ -278,40 +278,40 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
                         <div class="card-front">
                             <div class="scenario-icon" aria-hidden="true">{}</div>
                             <h3>API</h3>
-                            <p>OpenAI API, Anthropic API, Azure OpenAI - programistyczny dostęp do modeli.</p>
+                            <p>OpenAI API, Anthropic API, Microsoft Foundry: dostęp do modeli z poziomu kodu.</p>
                         </div>
                         <div class="card-back">
                             <h4>Zalety:</h4>
                             <ul>
-                                <li class="pro">Pełna kontrola parametrów</li>
+                                <li class="pro">Kontrola parametrów (zakres zależy od dostawcy i modelu)</li>
                                 <li class="pro">Integracja z aplikacjami</li>
                                 <li class="pro">Function calling, streaming</li>
                             </ul>
                             <h4>Wady:</h4>
                             <ul>
-                                <li class="con">Płatność per-token</li>
-                                <li class="con">Wymaga kodu/integracji</li>
-                                <li class="con">Rate limits</li>
+                                <li class="con">Płatność za tokeny</li>
+                                <li class="con">Wymaga programowania</li>
+                                <li class="con">Limity zapytań (rate limits)</li>
                             </ul>
                             <h4>Dla kogo:</h4>
-                            <p class="audience">Developerzy, produkty SaaS, automatyzacja</p>
+                            <p class="audience">Programiści, produkty SaaS, automatyzacja</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="callout edu-block">
-                <h3>Best Practices</h3>
-                <p><strong>Temperature:</strong> Użyj 0-0.3 dla zadań wymagających precyzji (kod, fakty), 0.7-1.0 dla kreatywnych (pisanie, brainstorming).</p>
-                <p><strong>Max tokens:</strong> Ustaw rozsądny limit, aby uniknąć zbyt długich lub zbyt kosztownych odpowiedzi.</p>
-                <p><strong>Structured output:</strong> Zawsze używaj JSON mode lub schema validation w produkcji.</p>
+                <h3>Dobre praktyki</h3>
+                <p><strong>Temperature:</strong> 0-0.3 do zadań wymagających precyzji (kod, fakty), 0.7-1.0 do zadań twórczych (pisanie, burza mózgów). Część najnowszych modeli nie pozwala zmieniać temperatury (np. obecne modele Claude zwracają błąd przy wartości innej niż domyślna). Wtedy zachowaniem steruje się promptem i poziomem rozumowania (effort).</p>
+                <p><strong>Max tokens:</strong> Ustaw rozsądny limit, żeby odpowiedź nie była za długa ani za droga. Limit ucina tekst, ale nie sprawia, że model pisze zwięźlej. Jeśli chcesz krótszej odpowiedzi, napisz to w prompcie.</p>
+                <p><strong>Structured output:</strong> Gdy odpowiedź czyta program, używaj w produkcji structured outputs ze schematem (albo przynajmniej JSON mode) i waliduj wynik w kodzie.</p>
             </div>
         </div></section>
     </main>
 
     <footer class="edu-footer"><div class="edu-footer-inner">
         <a href="index.html">← Anatomia LLM</a>
-        <span>Interaktywny przewodnik po Large Language Models</span>
+        <span>Interaktywny przewodnik po dużych modelach językowych</span>
     </div></footer>
 
     <script>
@@ -326,22 +326,21 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
             { word: 'niezwykle', baseProb: 0.01 }
         ];
 
+        // Continuation per first word; for "jasno" index 0 is the greedy (temperature 0) path
         const continuations = {
-            low: [
-                "jasno i ciepło dzisiaj.",
+            jasno: [
                 "jasno na niebie.",
-                "jasno, więc wyjdę na spacer."
+                "jasno i ciepło dzisiaj.",
+                "jasno, więc wyjdę na spacer.",
+                "jasno dzisiaj – idealny dzień na wycieczkę."
             ],
-            medium: [
-                "pięknie nad miastem, rozświetlając ulice złotym blaskiem.",
-                "mocno, a ptaki śpiewają w koronach drzew.",
-                "jasno dzisiaj - idealny dzień na wycieczkę."
-            ],
-            high: [
-                "magicznie, jakby chciało nam opowiedzieć starożytną historię o złotych krainach.",
-                "niezwykle intensywnie, malując świat w odcieniach, których nazw jeszcze nie wymyślono.",
-                "złoto i szmaragdowo, a cienie tańczą walca na murach zamku wspomnień."
-            ]
+            mocno: ["mocno, a ptaki śpiewają w koronach drzew."],
+            pięknie: ["pięknie nad miastem, rozświetlając ulice złotym blaskiem."],
+            dzisiaj: ["dzisiaj od samego rana."],
+            ciepło: ["ciepło, choć wieje lekki wiatr."],
+            złoto: ["złoto i szmaragdowo, a cienie tańczą walca na murach zamku wspomnień."],
+            magicznie: ["magicznie, jakby chciało nam opowiedzieć starożytną historię o złotych krainach."],
+            niezwykle: ["niezwykle intensywnie, malując świat w odcieniach, których nazw jeszcze nie wymyślono."]
         };
 
         function softmax(logits, temperature) {
@@ -351,6 +350,25 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
             const exps = scaled.map(s => Math.exp(s - maxVal));
             const sum = exps.reduce((a, b) => a + b, 0);
             return exps.map(e => e / sum);
+        }
+
+        function getSampling() {
+            const temp = parseFloat(document.getElementById('temperature').value);
+            const topp = parseFloat(document.getElementById('topp').value);
+            const topk = parseInt(document.getElementById('topk').value);
+            const logits = words.map(w => Math.log(w.baseProb + 0.001));
+            const probs = softmax(logits, temp);
+            const sorted = probs.map((p, i) => ({ prob: p, idx: i })).sort((a, b) => b.prob - a.prob);
+            const afterTopK = sorted.slice(0, Math.max(1, topk));
+            const kMass = afterTopK.reduce((a, x) => a + x.prob, 0);
+            const active = [];
+            let cumsum = 0;
+            for (const item of afterTopK) {
+                if (active.length && cumsum >= topp) break;
+                active.push(item);
+                cumsum += item.prob / kMass;
+            }
+            return { temp, probs, active };
         }
 
         function updateVisualization() {
@@ -364,30 +382,15 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
             document.getElementById('topkValue').textContent = topk;
             document.getElementById('maxValue').textContent = maxTok;
 
-            const logits = words.map(w => Math.log(w.baseProb + 0.001));
-            const probs = softmax(logits, temp);
-
-            let filteredProbs = probs.map((p, i) => ({ prob: p, idx: i }));
-            filteredProbs.sort((a, b) => b.prob - a.prob);
-            const topkSet = new Set(filteredProbs.slice(0, topk).map(x => x.idx));
-
-            let cumsum = 0;
-            const toppSet = new Set();
-            for (const item of filteredProbs) {
-                if (cumsum < topp) {
-                    toppSet.add(item.idx);
-                    cumsum += item.prob;
-                }
-            }
+            const { probs, active } = getSampling();
+            const activeSet = new Set(active.map(x => x.idx));
 
             const container = document.getElementById('probBars');
             container.innerHTML = '';
 
             const maxProb = Math.max(...probs);
             words.forEach((word, i) => {
-                const isInTopK = topkSet.has(i);
-                const isInTopP = toppSet.has(i);
-                const isActive = isInTopK && isInTopP;
+                const isActive = activeSet.has(i);
 
                 const bar = document.createElement('div');
                 bar.className = 'prob-bar';
@@ -405,14 +408,17 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
         }
 
         function generate() {
-            const temp = parseFloat(document.getElementById('temperature').value);
-            let category;
-            if (temp < 0.5) category = 'low';
-            else if (temp < 1.2) category = 'medium';
-            else category = 'high';
-
-            const options = continuations[category];
-            const text = options[Math.floor(Math.random() * options.length)];
+            const { temp, active } = getSampling();
+            // Temperature 0 = greedy: always the most probable token and the same text
+            let picked = active[0];
+            if (temp > 0) {
+                const mass = active.reduce((a, x) => a + x.prob, 0);
+                let r = Math.random() * mass;
+                picked = active.find(x => (r -= x.prob) <= 0) || active[active.length - 1];
+            }
+            const options = continuations[words[picked.idx].word];
+            const text = temp > 0 ? options[Math.floor(Math.random() * options.length)] : options[0];
+            const pickedProb = picked.prob / active.reduce((a, x) => a + x.prob, 0);
 
             const container = document.getElementById('generatedText');
             container.innerHTML = '<span class="prompt-echo">Słońce świeci </span>';
@@ -424,7 +430,7 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
                     const span = document.createElement('span');
                     span.className = 'word';
                     span.textContent = wordsArray[i] + ' ';
-                    span.title = `Prawdopodobieństwo: ${(Math.random() * 30 + 10).toFixed(1)}%`;
+                    if (i === 0) span.title = `Prawdopodobieństwo wylosowania: ${(pickedProb * 100).toFixed(1)}%`;
                     container.appendChild(span);
                     i++;
                 } else {
@@ -454,7 +460,7 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
                 const formatted = JSON.stringify(response, null, 2);
                 preview.textContent = formatted;
                 preview.className = 'data-panel json-preview valid';
-                msg.textContent = '✓ JSON poprawny! Odpowiedź zgodna ze schematem.';
+                msg.textContent = '✓ JSON poprawny, odpowiedź zgodna ze schematem.';
                 msg.className = 'validation-msg success';
             } catch (e) {
                 preview.className = 'data-panel json-preview invalid';

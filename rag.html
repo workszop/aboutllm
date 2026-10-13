@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG i Fine-tuning - Anatomia LLM</title>
+    <title>RAG i fine-tuning – Anatomia LLM</title>
     <link rel="icon" type="image/png" href="assets/edulab-mark-ink.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -122,7 +122,7 @@
 </head>
 <body class="edu">
     <header class="edu-header"><div class="edu-header-inner">
-        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM - strona główna">
+        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM – strona główna">
             <img class="edu-logo" src="assets/edulab-mark-ink.png" alt="edulab">
             <span class="edu-wordmark">edulab</span>
         </a>
@@ -137,48 +137,48 @@
     </div></header>
 
     <header class="page-head">
-        <h1 class="app-title">RAG i Fine-tuning</h1>
-        <p class="edu-lead">Jak dostarczyć modelowi wiedzę? Poznaj okno kontekstowe, RAG i zdecyduj, kiedy warto robić fine-tuning.</p>
+        <h1 class="app-title">RAG i fine-tuning</h1>
+        <p class="edu-lead">Jak dostarczyć modelowi wiedzę? Ta strona pokazuje okno kontekstowe i RAG oraz pomaga zdecydować, kiedy fine-tuning ma sens.</p>
     </header>
 
     <main class="bands">
         <section class="sec"><div class="wrap">
-            <div class="sec-head"><h2>Okno kontekstowe - ile model może "pamiętać"?</h2></div>
+            <div class="sec-head"><h2>Okno kontekstowe – ile tekstu model przetwarza naraz</h2></div>
             <div class="pill-group">
-                <button class="pill ctx-btn active" onclick="setContext(4096)">4K tokenów</button>
-                <button class="pill ctx-btn" onclick="setContext(8192)">8K tokenów</button>
+                <button class="pill ctx-btn active" onclick="setContext(8192)">8K tokenów</button>
                 <button class="pill ctx-btn" onclick="setContext(32000)">32K tokenów</button>
                 <button class="pill ctx-btn" onclick="setContext(128000)">128K tokenów</button>
                 <button class="pill ctx-btn" onclick="setContext(200000)">200K tokenów</button>
+                <button class="pill ctx-btn" onclick="setContext(1000000)">1M tokenów</button>
             </div>
             <div class="card">
                 <div class="card-body">
                     <div class="context-bar">
-                        <div class="context-fill" id="contextFillBar" style="width:25%">
+                        <div class="context-fill" id="contextFillBar" style="width:12.2%">
                             <span id="contextLabel">~1000 tokenów</span>
                         </div>
                     </div>
                     <div class="context-info">
                         <span>0</span>
-                        <span id="contextMax">4,096 tokenów</span>
+                        <span id="contextMax">8192 tokenów</span>
                     </div>
                 </div>
                 <div class="card-foot">
                     <div class="context-examples" id="contextExamples" aria-live="polite">
-                        <p><strong>Co się mieści w 4K tokenach:</strong></p>
-                        <p>• ~3000 słów tekstu (6 stron A4)</p>
-                        <p>• ~200 linii kodu</p>
-                        <p>• Krótki artykuł lub rozdział książki</p>
+                        <p><strong>Co się mieści w 8K tokenach:</strong></p>
+                        <p>• ~4000 słów po polsku albo ~6000 po angielsku (8–12 stron A4)</p>
+                        <p>• ~600–800 linii kodu</p>
+                        <p>• Krótszy artykuł naukowy</p>
                     </div>
                 </div>
             </div>
             <div class="callout edu-block">
-                <p><strong>Context window</strong> to maksymalna ilość tekstu, którą model może przetworzyć naraz. Obejmuje zarówno input (prompt) jak i output (odpowiedź). Im większe okno, tym więcej informacji możesz przekazać.</p>
+                <p><strong>Okno kontekstowe</strong> (context window) to maksymalna liczba tokenów, jaką model przetwarza w jednym wywołaniu. Mieszczą się w nim razem prompt (wejście) i odpowiedź (wyjście), więc długi prompt zostawia mniej miejsca na odpowiedź. Im większe okno, tym więcej informacji zmieścisz w prompcie. Polski tekst zużywa więcej tokenów na słowo niż angielski, dlatego w tym samym oknie mieści się mniej polskich słów.</p>
             </div>
         </div></section>
 
         <section class="sec"><div class="wrap">
-            <div class="sec-head"><h2>RAG - Retrieval-Augmented Generation</h2></div>
+            <div class="sec-head"><h2>RAG – Retrieval-Augmented Generation</h2></div>
             <div class="rag-flow">
                 <div class="flow-step" id="step1">
                     <h3>1. Pytanie</h3>
@@ -190,7 +190,7 @@
                 </div>
                 <div class="flow-step" id="step3">
                     <h3>3. Wyszukiwanie</h3>
-                    <p>Podobne dokumenty</p>
+                    <p>Najbardziej podobne fragmenty z bazy</p>
                 </div>
                 <div class="flow-step" id="step4">
                     <h3>4. Kontekst</h3>
@@ -215,7 +215,7 @@
                             <button class="btn" onclick="runRAG()">Wyszukaj i generuj</button>
                         </div>
                         <div class="result-text" id="resultText" aria-live="polite">
-                            Kliknij przycisk, aby uruchomić proces RAG...
+                            Kliknij „Wyszukaj i generuj”, aby przejść przez kolejne kroki RAG.
                         </div>
                     </div>
                 </div>
@@ -230,20 +230,20 @@
                     <div class="meter-bar">
                         <div class="meter-fill" id="contextFill" style="width:0%"></div>
                         <div class="meter-marker" style="left:25%" title="System prompt"></div>
-                        <div class="meter-marker" style="left:75%" title="Limit bezpieczny"></div>
+                        <div class="meter-marker" style="left:75%" title="Bezpieczny limit"></div>
                     </div>
                 </div>
             </div>
         </div></section>
 
         <section class="sec"><div class="wrap">
-            <div class="sec-head"><h2>Drzewo decyzyjne: RAG vs Fine-tuning</h2></div>
-            <p class="sec-hint">Odpowiedz na pytania, aby dowiedzieć się, jakie podejście będzie najlepsze.</p>
+            <div class="sec-head"><h2>Drzewo decyzyjne: RAG czy fine-tuning</h2></div>
+            <p class="sec-hint">Odpowiedz na pytania, a drzewo podpowie, które podejście pasuje do Twojego przypadku.</p>
 
             <div class="decision-tree" id="decisionTree" aria-live="polite">
                 <div class="tree-node question active" id="q1">
-                    <h4>Czy masz dużo specyficznych danych domenowych?</h4>
-                    <p>np. dokumentacja firmy, baza wiedzy, specjalistyczne treści</p>
+                    <h4>Czy masz dużo własnych danych z konkretnej dziedziny?</h4>
+                    <p>np. dokumentacja firmy, baza wiedzy, teksty specjalistyczne</p>
                 </div>
                 <div class="tree-options" id="o1">
                     <button class="pill tree-option" onclick="answer(1, 'yes')">Tak, mam dużą bazę</button>
@@ -256,16 +256,16 @@
             <div class="sec-head"><h2>Podsumowanie: kiedy co wybrać?</h2></div>
             <div class="comparison-grid">
                 <div class="card">
-                    <div class="card-head"><h4>Prompt Engineering</h4></div>
-                    <div class="card-body"><p>Dla prostych zadań, gdzie cały kontekst mieści się w jednym zapytaniu. Szybkie, bez infrastruktury.</p></div>
+                    <div class="card-head"><h4>Prompt engineering</h4></div>
+                    <div class="card-body"><p>Do prostych zadań, w których cały kontekst mieści się w jednym zapytaniu. Działa od razu, bez dodatkowej infrastruktury.</p></div>
                 </div>
                 <div class="card">
                     <div class="card-head"><h4>RAG</h4></div>
-                    <div class="card-body"><p>Gdy potrzebujesz aktualnych danych, dużej bazy wiedzy lub źródeł. Łatwiejsze do aktualizacji.</p></div>
+                    <div class="card-body"><p>Gdy potrzebujesz aktualnych danych, dużej bazy wiedzy albo wskazania źródeł. Aby zaktualizować wiedzę, wystarczy podmienić dokumenty w bazie.</p></div>
                 </div>
                 <div class="card">
                     <div class="card-head"><h4>Fine-tuning</h4></div>
-                    <div class="card-body"><p>Dla specyficznego stylu/formatu odpowiedzi, wiedzy domenowej. Droższe, trudniejsze w utrzymaniu.</p></div>
+                    <div class="card-body"><p>Gdy model ma na stałe przyjąć określony styl, format lub sposób zachowania. Słabo nadaje się do dodawania nowych faktów; do tego lepszy jest RAG. Droższy i trudniejszy w utrzymaniu.</p></div>
                 </div>
             </div>
         </div></section>
@@ -273,31 +273,31 @@
 
     <footer class="edu-footer"><div class="edu-footer-inner">
         <a href="index.html">← Anatomia LLM</a>
-        <span>Interaktywny przewodnik po Large Language Models</span>
+        <span>Interaktywny przewodnik po dużych modelach językowych</span>
     </div></footer>
 
     <script>
         // Context window visualization
         const contextExamplesData = {
-            4096: {
-                text: "Co się mieści w 4K tokenach:",
-                items: ["~3000 słów tekstu (6 stron A4)", "~200 linii kodu", "Krótki artykuł lub rozdział książki"]
-            },
             8192: {
                 text: "Co się mieści w 8K tokenach:",
-                items: ["~6000 słów tekstu (12 stron A4)", "~400 linii kodu", "Średni artykuł naukowy"]
+                items: ["~4000 słów po polsku albo ~6000 po angielsku (8–12 stron A4)", "~600–800 linii kodu", "Krótszy artykuł naukowy"]
             },
             32000: {
                 text: "Co się mieści w 32K tokenach:",
-                items: ["~24000 słów tekstu (48 stron A4)", "~1600 linii kodu", "Mała książka lub pełna dokumentacja"]
+                items: ["~16000 słów po polsku albo ~24000 po angielsku (30–50 stron A4)", "~2500–3200 linii kodu", "Krótka książka lub dokumentacja małego projektu"]
             },
             128000: {
                 text: "Co się mieści w 128K tokenach:",
-                items: ["~96000 słów tekstu (~200 stron A4)", "~6400 linii kodu", "Cała książka lub duży codebase"]
+                items: ["~64000 słów po polsku albo ~96000 po angielsku (130–190 stron A4)", "~10000–13000 linii kodu", "Cała powieść lub kod niewielkiego projektu"]
             },
             200000: {
                 text: "Co się mieści w 200K tokenach:",
-                items: ["~150000 słów tekstu (~300 stron A4)", "~10000 linii kodu", "Kilka książek lub pełna dokumentacja projektu"]
+                items: ["~100000 słów po polsku albo ~150000 po angielsku (200–300 stron A4)", "~15000–20000 linii kodu", "Jedna–dwie powieści lub pełna dokumentacja projektu"]
+            },
+            1000000: {
+                text: "Co się mieści w 1M tokenów:",
+                items: ["~500000 słów po polsku albo ~750000 po angielsku (1000–1500 stron A4)", "~75000–100000 linii kodu", "Kilka powieści albo kod średniej wielkości projektu"]
             }
         };
 
@@ -307,7 +307,7 @@
 
             const fillPercent = Math.min((1000 / size) * 100, 100);
             document.getElementById('contextFillBar').style.width = fillPercent + '%';
-            document.getElementById('contextMax').textContent = size.toLocaleString() + ' tokenów';
+            document.getElementById('contextMax').textContent = size.toLocaleString('pl-PL') + ' tokenów';
 
             const examples = contextExamplesData[size];
             document.getElementById('contextExamples').innerHTML = `
@@ -318,12 +318,12 @@
 
         // RAG simulation
         const knowledgeBase = [
-            { id: 1, title: "Temperature w LLM", content: "Temperature kontroluje losowość generowania. Wartość 0 = deterministyczne, 1+ = kreatywne.", keywords: ["temperature", "parametry", "generowanie", "losowość"] },
-            { id: 2, title: "Top-p sampling", content: "Top-p (nucleus sampling) wybiera tokeny, których łączne prawdopodobieństwo wynosi p. Typowa wartość: 0.9.", keywords: ["top-p", "sampling", "parametry", "prawdopodobieństwo"] },
+            { id: 1, title: "Temperature w LLM", content: "Temperature kontroluje losowość generowania. Przy 0 odpowiedzi są niemal deterministyczne, przy wartościach od ok. 1 w górę coraz bardziej losowe i różnorodne.", keywords: ["temperature", "parametry", "generowanie", "losowość"] },
+            { id: 2, title: "Top-p sampling", content: "Top-p (nucleus sampling) losuje tylko spośród najbardziej prawdopodobnych tokenów, których łączne prawdopodobieństwo osiąga p. Typowa wartość: 0.9.", keywords: ["top-p", "sampling", "parametry", "prawdopodobieństwo"] },
             { id: 3, title: "Tokenizacja", content: "Tokenizacja dzieli tekst na mniejsze jednostki (tokeny). BPE i WordPiece to popularne algorytmy.", keywords: ["tokenizacja", "tokeny", "BPE", "tekst"] },
-            { id: 4, title: "Embedding", content: "Embedding to reprezentacja wektorowa tekstu. Podobne znaczeniowo słowa mają podobne wektory.", keywords: ["embedding", "wektor", "reprezentacja", "znaczenie"] },
-            { id: 5, title: "RLHF", content: "Reinforcement Learning from Human Feedback - technika uczenia modeli na podstawie preferencji ludzi.", keywords: ["RLHF", "uczenie", "feedback", "trening"] },
-            { id: 6, title: "Halucynacje LLM", content: "Halucynacje to generowanie fałszywych informacji przez model. RAG pomaga je ograniczyć.", keywords: ["halucynacje", "błędy", "fałsz", "RAG"] }
+            { id: 4, title: "Embedding", content: "Embedding to reprezentacja wektorowa tekstu. Teksty o podobnym znaczeniu mają bliskie sobie wektory.", keywords: ["embedding", "wektor", "reprezentacja", "znaczenie"] },
+            { id: 5, title: "RLHF", content: "Reinforcement Learning from Human Feedback – technika dostrajania modelu na podstawie ocen i preferencji ludzi.", keywords: ["RLHF", "uczenie", "feedback", "trening"] },
+            { id: 6, title: "Halucynacje LLM", content: "Halucynacje to zmyślone lub fałszywe informacje, które model podaje jak fakty. RAG pomaga je ograniczyć, ale ich nie eliminuje.", keywords: ["halucynacje", "błędy", "fałsz", "RAG"] }
         ];
 
         function renderDocuments() {
@@ -359,7 +359,7 @@
             await sleep(500);
 
             document.getElementById('step2').classList.add('active');
-            resultText.innerHTML = 'Konwersja na wektor...';
+            resultText.innerHTML = 'Zamiana pytania na wektor...';
             await sleep(500);
 
             document.getElementById('step3').classList.add('active');
@@ -407,15 +407,15 @@
         const decisionTree = {
             1: {
                 yes: { next: 2, text: "Czy dane wymagają częstych aktualizacji?" },
-                no: { result: "prompt", text: "Prompt Engineering wystarczy - umieść kontekst bezpośrednio w prompcie." }
+                no: { result: "prompt", text: "Wystarczy dobrze napisany prompt, w którym umieścisz potrzebny kontekst." }
             },
             2: {
-                yes: { result: "rag", text: "RAG - łatwo aktualizować bazę wiedzy bez ponownego treningu." },
-                no: { next: 3, text: "Czy potrzebujesz specyficznego stylu/formatu odpowiedzi?" }
+                yes: { result: "rag", text: "Bazę wiedzy aktualizujesz bez ponownego trenowania modelu: wystarczy podmienić dokumenty." },
+                no: { next: 3, text: "Czy potrzebujesz stałego stylu lub formatu odpowiedzi, którego nie da się uzyskać samym promptem?" }
             },
             3: {
-                yes: { result: "finetune", text: "Fine-tuning - nauczy model stylu i formatu odpowiedzi." },
-                no: { result: "rag", text: "RAG - pozwoli wykorzystać dane bez kosztownego fine-tuningu." }
+                yes: { result: "finetune", text: "Fine-tuning nauczy model stylu i formatu odpowiedzi. Fakty z bazy wiedzy nadal lepiej dostarczać przez RAG, a oba podejścia można łączyć." },
+                no: { result: "rag", text: "Model skorzysta z Twoich danych bez kosztownego fine-tuningu." }
             }
         };
 
@@ -458,7 +458,7 @@
         function showResult(type, text) {
             const tree = document.getElementById('decisionTree');
             const titles = {
-                prompt: "Prompt Engineering",
+                prompt: "Prompt engineering",
                 rag: "RAG (Retrieval-Augmented Generation)",
                 finetune: "Fine-tuning"
             };
@@ -477,8 +477,8 @@
             currentQuestion = 1;
             document.getElementById('decisionTree').innerHTML = `
                 <div class="tree-node question active" id="q1">
-                    <h4>Czy masz dużo specyficznych danych domenowych?</h4>
-                    <p>np. dokumentacja firmy, baza wiedzy, specjalistyczne treści</p>
+                    <h4>Czy masz dużo własnych danych z konkretnej dziedziny?</h4>
+                    <p>np. dokumentacja firmy, baza wiedzy, teksty specjalistyczne</p>
                 </div>
                 <div class="tree-options" id="o1">
                     <button class="pill tree-option" onclick="answer(1, 'yes')">Tak, mam dużą bazę</button>

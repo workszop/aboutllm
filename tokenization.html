@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anatomia LLM - Interaktywny Przewodnik</title>
+    <title>Tokenizacja i trening – Anatomia LLM</title>
     <link rel="icon" type="image/png" href="assets/edulab-mark-ink.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -89,7 +89,7 @@
 </head>
 <body class="edu">
     <header class="edu-header"><div class="edu-header-inner">
-        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM - strona główna">
+        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM – strona główna">
             <img class="edu-logo" src="assets/edulab-mark-ink.png" alt="edulab">
             <span class="edu-wordmark">edulab</span>
         </a>
@@ -105,15 +105,15 @@
 
     <header class="page-head">
         <h1 class="app-title">Anatomia LLM</h1>
-        <p class="edu-lead">Poznaj wewnętrzne mechanizmy dużych modeli językowych: jak przetwarzają tekst, jak powstają i ile kosztują.</p>
+        <p class="edu-lead">Ta strona pokazuje, jak model dzieli tekst na tokeny i zamienia je na wektory, czym model bazowy różni się od instrukcyjnego, jak przebiega trening i ile kosztuje korzystanie z modelu przez API.</p>
     </header>
 
     <main class="bands">
         <section class="sec"><div class="wrap">
-            <div class="sec-head"><h2>Tokenizacja - jak model "widzi" tekst</h2></div>
+            <div class="sec-head"><h2>Tokenizacja – jak model „widzi” tekst</h2></div>
             <div class="card">
                 <div class="card-body">
-                    <label class="field-label" for="inputText">Tekst</label>
+                    <label class="field-label" for="inputText">Tekst (uproszczona symulacja)</label>
                     <textarea class="input" id="inputText" rows="3" placeholder="Wpisz dowolny tekst...">Duże modele językowe są fascynujące!</textarea>
                     <div class="tokens-display" id="tokensDisplay" aria-live="polite"></div>
                 </div>
@@ -126,14 +126,15 @@
                 </div>
             </div>
             <div class="callout edu-block">
-                <h3>Jak to działa?</h3>
-                <p><strong>Tokenizacja</strong> dzieli tekst na mniejsze jednostki. Algorytmy jak BPE łączą często występujące sekwencje znaków. Średnio 1 token ≈ 4 znaki w angielskim, ale w polskim może być więcej.</p>
+                <h3>Demo a prawdziwy tokenizer</h3>
+                <p><strong>Tokenizacja</strong> dzieli tekst na mniejsze jednostki, czyli tokeny. Demo powyżej to uproszczenie: tnie tekst na słowa, spacje i znaki interpunkcyjne, a słowa dłuższe niż 6 liter dzieli na pół. Prawdziwe tokenizery, np. BPE (Byte Pair Encoding), korzystają ze słownika fragmentów wyuczonego na dużym zbiorze tekstu: częste ciągi znaków stają się jednym tokenem. Spacja zwykle przykleja się wtedy do początku następnego słowa i razem z nim tworzy token.</p>
+                <p>W angielskim tekście jeden token to średnio około 4 znaki. Polski tekst dzieli się na drobniejsze kawałki: na token przypada mniej znaków, więc ten sam tekst zużywa więcej tokenów.</p>
             </div>
         </div></section>
 
         <section class="sec"><div class="wrap">
-            <div class="sec-head"><h2>Embedding - reprezentacja wektorowa</h2></div>
-            <p class="sec-hint">Kliknij na token powyżej, aby zobaczyć jego reprezentację wektorową (symulacja).</p>
+            <div class="sec-head"><h2>Embedding – reprezentacja wektorowa</h2></div>
+            <p class="sec-hint">Kliknij token powyżej, aby zobaczyć jego wektor. To symulacja: liczby są wyliczane z liter tokenu, a nie pobierane z prawdziwego modelu.</p>
             <div class="grid-2">
                 <div class="data-panel vector-display" id="vectorDisplay">Wybierz token...</div>
                 <div class="card">
@@ -144,7 +145,7 @@
                 </div>
             </div>
             <div class="callout edu-block">
-                <p><strong>Embedding</strong> zamienia każdy token na wektor (listę liczb), np. 768 lub 4096 wymiarów. Podobne znaczeniowo słowa mają podobne wektory - "król" i "królowa" będą blisko siebie w przestrzeni wektorowej.</p>
+                <p><strong>Embedding</strong> zamienia każdy token na wektor, czyli listę liczb. Zależnie od modelu wektor ma setki lub tysiące wymiarów, np. 768 albo 4096. Słowa o podobnym znaczeniu mają zbliżone wektory: „król” i „królowa” leżą blisko siebie w przestrzeni wektorowej.</p>
             </div>
         </div></section>
 
@@ -157,21 +158,21 @@
             </div>
             <div class="grid-2">
                 <div class="card">
-                    <div class="card-head"><h4>Base Model (GPT-3 base)</h4></div>
+                    <div class="card-head"><h4>Base Model (np. Qwen3.5-9B-Base)</h4></div>
                     <div class="card-body panel-content base" id="baseResponse" aria-live="polite"></div>
                 </div>
                 <div class="card">
-                    <div class="card-head"><h4>Instruct Model (GPT-3.5/4)</h4></div>
+                    <div class="card-head"><h4>Instruct Model (np. Qwen3.5-9B)</h4></div>
                     <div class="card-body panel-content" id="instructResponse" aria-live="polite"></div>
                 </div>
             </div>
             <div class="callout edu-block">
-                <p><strong>Base Model</strong> to model tylko do przewidywania następnego tokenu - kontynuuje tekst statystycznie. <strong>Instruct Model</strong> został dodatkowo wytrenowany na dialogach i instrukcjach, dzięki czemu odpowiada na pytania.</p>
+                <p><strong>Base Model</strong> przeszedł tylko trening wstępny: nauczył się przewidywać następny token w zwykłym tekście, więc kontynuuje tekst. <strong>Instruct Model</strong> też przewiduje kolejne tokeny, ale po dodatkowym treningu na instrukcjach i dialogach (SFT, RLHF) odpowiada na pytania i wykonuje polecenia.</p>
             </div>
         </div></section>
 
         <section class="sec"><div class="wrap">
-            <div class="sec-head"><h2>Jak powstaje LLM?</h2></div>
+            <div class="sec-head"><h2>Etapy treningu LLM</h2></div>
             <div class="timeline">
                 <button class="timeline-step active" onclick="showPhase(0)">
                     <h4>Pre-training</h4>
@@ -179,55 +180,58 @@
                 </button>
                 <button class="timeline-step" onclick="showPhase(1)">
                     <h4>SFT</h4>
-                    <p>Fine-tuning instrukcji</p>
+                    <p>Dostrajanie na instrukcjach</p>
                 </button>
                 <button class="timeline-step" onclick="showPhase(2)">
                     <h4>RLHF</h4>
-                    <p>Uczenie z feedbacku</p>
+                    <p>Uczenie z ocen ludzi</p>
                 </button>
             </div>
             <div class="card timeline-detail active" id="phase0">
                 <div class="card-head"><h4>Pre-training (trening wstępny)</h4></div>
                 <div class="card-body">
-                    <p>Model uczy się przewidywać następne słowo na ogromnym korpusie tekstu (internet, książki, Wikipedia). Wymaga setek GPU przez tygodnie/miesiące.</p>
-                    <p><strong>Koszt:</strong> $2-10M+ dla dużych modeli</p>
-                    <p><strong>Dane:</strong> Biliony tokenów tekstu</p>
+                    <p>Model uczy się przewidywać następny token na ogromnym zbiorze tekstu (strony internetowe, książki, Wikipedia, kod). Duże modele trenuje się na tysiącach GPU przez tygodnie lub miesiące.</p>
+                    <p><strong>Koszt:</strong> miliony dolarów za średni model, dziesiątki–setki milionów za największe</p>
+                    <p><strong>Dane:</strong> biliony tokenów tekstu</p>
                     <div class="progress-bar"><div class="progress-fill" id="progress0"></div></div>
                 </div>
             </div>
             <div class="card timeline-detail" id="phase1">
                 <div class="card-head"><h4>Supervised Fine-Tuning (SFT)</h4></div>
                 <div class="card-body">
-                    <p>Model jest trenowany na parach instrukcja-odpowiedź napisanych przez ludzi. Uczy się formatu dialogu i wykonywania poleceń.</p>
-                    <p><strong>Dane:</strong> 10-100k przykładów wysokiej jakości</p>
-                    <p><strong>Efekt:</strong> Model zaczyna odpowiadać zamiast tylko kontynuować tekst</p>
+                    <p>Model uczy się na parach instrukcja–odpowiedź, które ludzie napisali lub sprawdzili. Z tych przykładów przejmuje format dialogu i sposób wykonywania poleceń.</p>
+                    <p><strong>Dane:</strong> 10-100k starannie dobranych przykładów</p>
+                    <p><strong>Efekt:</strong> model odpowiada na polecenia, zamiast tylko kontynuować tekst</p>
                     <div class="progress-bar"><div class="progress-fill" id="progress1"></div></div>
                 </div>
             </div>
             <div class="card timeline-detail" id="phase2">
                 <div class="card-head"><h4>RLHF (Reinforcement Learning from Human Feedback)</h4></div>
                 <div class="card-body">
-                    <p>Ludzie oceniają odpowiedzi modelu. Na podstawie tych ocen trenowany jest model nagrody (reward model), który następnie używany jest do optymalizacji głównego modelu.</p>
-                    <p><strong>Efekt:</strong> Model jest bardziej pomocny, bezpieczny i zgodny z preferencjami użytkowników</p>
-                    <p><strong>Techniki:</strong> PPO, DPO, RLHF</p>
+                    <p>Ludzie porównują kilka odpowiedzi modelu na to samo pytanie i wskazują lepszą. Z tych porównań powstaje model nagrody (reward model), który ocenia odpowiedzi. Potem główny model jest trenowany uczeniem ze wzmocnieniem tak, żeby dawał odpowiedzi z wyższą oceną.</p>
+                    <p><strong>Efekt:</strong> odpowiedzi są bardziej pomocne, bezpieczniejsze i bliższe temu, co wybierają oceniający</p>
+                    <p><strong>Algorytmy:</strong> PPO w klasycznym RLHF; DPO to prostsza alternatywa, która uczy się wprost z par preferencji, bez osobnego modelu nagrody</p>
                     <div class="progress-bar"><div class="progress-fill" id="progress2"></div></div>
                 </div>
             </div>
         </div></section>
 
         <section class="sec"><div class="wrap">
-            <div class="sec-head"><h2>Ekonomia LLM - kalkulator kosztów</h2></div>
+            <div class="sec-head"><h2>Ekonomia LLM – kalkulator kosztów</h2></div>
             <div class="grid-2">
                 <div class="card">
                     <div class="card-body calc-inputs">
                         <div class="calc-row">
-                            <label class="field-label" for="modelSelect">Model</label>
+                            <label class="field-label" for="modelSelect">Model (cena za 1M tokenów: wejście / wyjście)</label>
                             <select class="input" id="modelSelect" onchange="updateCalc()">
-                                <option value="gpt4o">GPT-4o ($2.50 / $10 per 1M)</option>
-                                <option value="gpt4">GPT-4 Turbo ($10 / $30 per 1M)</option>
-                                <option value="gpt35">GPT-3.5 Turbo ($0.50 / $1.50 per 1M)</option>
-                                <option value="claude3">Claude 3.5 Sonnet ($3 / $15 per 1M)</option>
-                                <option value="llama">Llama 3.1 70B (self-hosted)</option>
+                                <option value="gpt6luna">GPT-6 Luna ($0.10 / $0.50)</option>
+                                <option value="gpt61sol">GPT-6.1 Sol ($2 / $10)</option>
+                                <option value="gpt6astra">GPT-6 Astra ($10 / $50)</option>
+                                <option value="haiku55">Claude Haiku 5.5 ($0.10 / $0.50)</option>
+                                <option value="sonnet55">Claude Sonnet 5.5 ($2 / $10)</option>
+                                <option value="opus55">Claude Opus 5.5 ($4 / $20)</option>
+                                <option value="gemini38flash">Gemini 3.8 Flash ($0.75 / $3.75 do końca 2026)</option>
+                                <option value="qwen38">Qwen3.8-27B (własny serwer, szacunkowo $0.10 / $0.10)</option>
                             </select>
                         </div>
                         <div class="calc-row">
@@ -239,14 +243,14 @@
                             <input class="edu-range" type="range" id="outputTokens" min="100" max="10000" value="500" oninput="updateCalc()">
                         </div>
                         <div class="calc-row">
-                            <label class="field-label" for="requests">Liczba zapytań/dzień: <span class="calc-value" id="requestsVal">100</span></label>
+                            <label class="field-label" for="requests">Zapytania dziennie: <span class="calc-value" id="requestsVal">100</span></label>
                             <input class="edu-range" type="range" id="requests" min="10" max="10000" value="100" oninput="updateCalc()">
                         </div>
                         <div class="calc-row">
-                            <label class="field-label" for="modeSelect">Tryb</label>
+                            <label class="field-label" for="modeSelect">Sposób wysyłania zapytań</label>
                             <select class="input" id="modeSelect" onchange="updateCalc()">
-                                <option value="batch">Batch (tańszy, wolniejszy)</option>
-                                <option value="stream">Streaming (real-time)</option>
+                                <option value="batch">Batch API (50% taniej, wyniki z opóźnieniem)</option>
+                                <option value="stream">Zwykłe zapytania (odpowiedź od razu)</option>
                             </select>
                         </div>
                     </div>
@@ -254,36 +258,36 @@
                 <div class="data-panel calc-results" aria-live="polite">
                     <div class="label">Szacunkowe koszty</div>
                     <div class="result-row">
-                        <span>Koszt/zapytanie</span>
+                        <span>Koszt jednego zapytania</span>
                         <span class="result-value" id="costPerRequest">$0.00</span>
                     </div>
                     <div class="result-row">
-                        <span>Koszt/dzień</span>
+                        <span>Koszt dziennie</span>
                         <span class="result-value" id="costPerDay">$0.00</span>
                     </div>
                     <div class="result-row">
-                        <span>Koszt/miesiąc</span>
+                        <span>Koszt miesięcznie (30 dni)</span>
                         <span class="result-value" id="costPerMonth">$0.00</span>
                     </div>
                     <div class="result-row">
-                        <span>Latency (szacunkowo)</span>
+                        <span>Opóźnienie (latency, szacunkowo)</span>
                         <span class="result-value" id="latency">~0ms</span>
                     </div>
                     <div class="result-row">
-                        <span>Throughput</span>
+                        <span>Szybkość generowania</span>
                         <span class="result-value" id="throughput">~0 tok/s</span>
                     </div>
                 </div>
             </div>
             <div class="callout edu-block">
-                <p><strong>Input tokens</strong> są tańsze niż <strong>output tokens</strong>. Batch processing może być 50% tańszy, ale ma większą latencję. Self-hosted modele mają wysoki koszt początkowy (GPU), ale niższe koszty per token.</p>
+                <p><strong>Tokeny wejściowe</strong> (input) są tańsze niż <strong>wyjściowe</strong> (output). Batch API kosztuje o połowę mniej, ale zlecenia są przetwarzane w tle, a wyniki przychodzą po minutach lub godzinach (najpóźniej po 24 h). Streaming dotyczy czegoś innego: włączony w zwykłym zapytaniu sprawia, że tokeny przychodzą na bieżąco, w trakcie generowania. Cena się przez to nie zmienia. Model na własnym serwerze wymaga drogiego sprzętu (GPU), ale przy dużym, stałym ruchu jeden token wychodzi taniej niż w API.</p>
             </div>
         </div></section>
     </main>
 
     <footer class="edu-footer"><div class="edu-footer-inner">
         <a href="index.html">← Anatomia LLM</a>
-        <span>Interaktywny przewodnik po Large Language Models</span>
+        <span>Interaktywny przewodnik po dużych modelach językowych</span>
     </div></footer>
 
     <script>
@@ -299,11 +303,11 @@
         function tokenize(text) {
             if (!text) return [];
             const tokens = [];
-            const words = text.split(/(\s+|[.,!?;:„""])/);
+            const words = text.split(/(\s+|[.,!?;:„”"])/);
             words.forEach(word => {
                 if (!word) return;
                 if (/^\s+$/.test(word)) { tokens.push(word); }
-                else if (/^[.,!?;:„""]$/.test(word)) { tokens.push(word); }
+                else if (/^[.,!?;:„”"]$/.test(word)) { tokens.push(word); }
                 else if (word.length > 6) {
                     const mid = Math.ceil(word.length / 2);
                     tokens.push(word.slice(0, mid));
@@ -343,7 +347,7 @@
             document.querySelectorAll('.token').forEach(t => t.classList.remove('selected'));
             element.classList.add('selected');
             const embedding = generateEmbedding(token);
-            vectorDisplay.innerHTML = `Token: "${token}"<br><br>[${embedding.join(',<br> ')}]<br><br>... (4096 wymiarów w rzeczywistości)`;
+            vectorDisplay.innerHTML = `Token: „${token}”<br><br>[${embedding.join(',<br> ')}]<br><br>... (tu 12 liczb; prawdziwy model ma setki lub tysiące wymiarów, np. 4096)`;
             vectorBars.innerHTML = '';
             embedding.forEach((val, i) => {
                 const row = document.createElement('div');
@@ -425,11 +429,15 @@
 
         // Calculator
         const models = {
-            gpt4o: { input: 2.5, output: 10, latency: 200, throughput: 80 },
-            gpt4: { input: 10, output: 30, latency: 400, throughput: 50 },
-            gpt35: { input: 0.5, output: 1.5, latency: 100, throughput: 100 },
-            claude3: { input: 3, output: 15, latency: 250, throughput: 70 },
-            llama: { input: 0.1, output: 0.1, latency: 150, throughput: 60 }
+            // Prices per 1M tokens (Oct 2026); latency/throughput are rough illustrative estimates
+            gpt6luna: { input: 0.1, output: 0.5, latency: 200, throughput: 150 },
+            gpt61sol: { input: 2, output: 10, latency: 400, throughput: 90 },
+            gpt6astra: { input: 10, output: 50, latency: 800, throughput: 60 },
+            haiku55: { input: 0.1, output: 0.5, latency: 200, throughput: 150 },
+            sonnet55: { input: 2, output: 10, latency: 400, throughput: 90 },
+            opus55: { input: 4, output: 20, latency: 600, throughput: 70 },
+            gemini38flash: { input: 0.75, output: 3.75, latency: 300, throughput: 150 },
+            qwen38: { input: 0.1, output: 0.1, latency: 150, throughput: 60 }
         };
 
         function updateCalc() {
@@ -439,9 +447,9 @@
             const requests = parseInt(document.getElementById('requests').value);
             const mode = document.getElementById('modeSelect').value;
 
-            document.getElementById('inputTokensVal').textContent = inputTok.toLocaleString();
-            document.getElementById('outputTokensVal').textContent = outputTok.toLocaleString();
-            document.getElementById('requestsVal').textContent = requests.toLocaleString();
+            document.getElementById('inputTokensVal').textContent = inputTok.toLocaleString('pl-PL');
+            document.getElementById('outputTokensVal').textContent = outputTok.toLocaleString('pl-PL');
+            document.getElementById('requestsVal').textContent = requests.toLocaleString('pl-PL');
 
             const batchDiscount = mode === 'batch' ? 0.5 : 1;
             const costPerReq = ((inputTok * model.input / 1000000) + (outputTok * model.output / 1000000)) * batchDiscount;
@@ -451,7 +459,7 @@
             document.getElementById('costPerRequest').textContent = '$' + costPerReq.toFixed(4);
             document.getElementById('costPerDay').textContent = '$' + costPerDay.toFixed(2);
             document.getElementById('costPerMonth').textContent = '$' + costPerMonth.toFixed(2);
-            document.getElementById('latency').textContent = '~' + (model.latency * (mode === 'batch' ? 3 : 1)) + 'ms';
+            document.getElementById('latency').textContent = mode === 'batch' ? 'minuty–godziny' : '~' + model.latency + ' ms';
             document.getElementById('throughput').textContent = '~' + model.throughput + ' tok/s';
         }
         updateCalc();

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenci AI - Anatomia LLM</title>
+    <title>Agenci AI – Anatomia LLM</title>
     <link rel="icon" type="image/png" href="assets/edulab-mark-ink.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -93,7 +93,7 @@
 </head>
 <body class="edu">
     <header class="edu-header"><div class="edu-header-inner">
-        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM - strona główna">
+        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM – strona główna">
             <img class="edu-logo" src="assets/edulab-mark-ink.png" alt="edulab">
             <span class="edu-wordmark">edulab</span>
         </a>
@@ -109,7 +109,7 @@
 
     <header class="page-head">
         <h1 class="app-title">Agenci AI</h1>
-        <p class="edu-lead">Agent AI to system, który autonomicznie planuje, wybiera narzędzia i wykonuje zadania. W przeciwieństwie do chatbota, agent może aktywnie działać w środowisku użytkownika.</p>
+        <p class="edu-lead">Agent AI to system, który sam planuje kolejne kroki, wybiera narzędzia i wykonuje zadanie. Klasyczny chatbot tylko odpowiada na pytania, a agent działa w środowisku użytkownika: uruchamia polecenia, czyta i zapisuje pliki.</p>
     </header>
 
     <main class="bands">
@@ -118,22 +118,22 @@
             <div class="cycle">
                 <button type="button" class="cycle-step" id="cyclePlan" onclick="highlightStep('plan')">
                     <span class="cycle-title">Planowanie</span>
-                    <span class="cycle-desc">Analiza zadania i strategia</span>
+                    <span class="cycle-desc">Rozbicie zadania na kroki</span>
                 </button>
                 <span class="cycle-arrow" aria-hidden="true">→</span>
                 <button type="button" class="cycle-step" id="cycleTool" onclick="highlightStep('tool')">
                     <span class="cycle-title">Wybór narzędzia</span>
-                    <span class="cycle-desc">Jakie API/akcja?</span>
+                    <span class="cycle-desc">Które narzędzie lub API?</span>
                 </button>
                 <span class="cycle-arrow" aria-hidden="true">→</span>
                 <button type="button" class="cycle-step" id="cycleExecute" onclick="highlightStep('execute')">
                     <span class="cycle-title">Wykonanie</span>
-                    <span class="cycle-desc">Uruchomienie akcji</span>
+                    <span class="cycle-desc">Wywołanie narzędzia i odczyt wyniku</span>
                 </button>
                 <span class="cycle-arrow" aria-hidden="true">→</span>
                 <button type="button" class="cycle-step" id="cycleReflect" onclick="highlightStep('reflect')">
                     <span class="cycle-title">Refleksja</span>
-                    <span class="cycle-desc">Czy cel osiągnięty?</span>
+                    <span class="cycle-desc">Czy cel osiągnięty? Jeśli nie, kolejny obieg</span>
                 </button>
             </div>
         </div></section>
@@ -142,7 +142,7 @@
             <div class="sec-head"><h2>Symulacja agenta</h2></div>
             <div class="card agent-demo">
                 <div class="card-head">
-                    <h3 class="demo-task">Zadanie: "Znajdź pliki .py i policz linie kodu"</h3>
+                    <h3 class="demo-task">Zadanie: „Znajdź pliki .py i policz ich linie”</h3>
                     <button class="btn" onclick="runAgent()" id="runBtn">Uruchom agenta</button>
                 </div>
                 <div class="card-body flush demo-content">
@@ -169,7 +169,7 @@
                     </div>
                     <div class="output-wrap">
                         <div class="data-panel output-panel" id="outputPanel" aria-live="polite">
-                            <div class="log-hint">Kliknij "Uruchom agenta" aby zobaczyć proces...</div>
+                            <div class="log-hint">Kliknij „Uruchom agenta”, żeby zobaczyć, jak agent działa krok po kroku.</div>
                         </div>
                     </div>
                 </div>
@@ -177,17 +177,17 @@
         </div></section>
 
         <section class="sec"><div class="wrap">
-            <div class="sec-head"><h2>Chatbot vs Agent</h2></div>
+            <div class="sec-head"><h2>Chatbot a agent</h2></div>
             <div class="grid-2">
                 <div class="card">
-                    <div class="card-head"><h3>Chatbot</h3></div>
+                    <div class="card-head"><h3>Chatbot (klasyczny)</h3></div>
                     <div class="card-body">
                         <ul class="compare-list">
-                            <li>Reaguje na pytania</li>
-                            <li>Jeden obrót konwersacji</li>
-                            <li>Brak dostępu do narzędzi</li>
+                            <li>Odpowiada na pytania</li>
+                            <li>Na jedno pytanie daje jedną odpowiedź</li>
+                            <li>Korzysta tylko z wiedzy modelu, bez narzędzi</li>
                             <li>Odpowiada tekstem</li>
-                            <li>Pasywny</li>
+                            <li>Czeka na kolejne pytanie</li>
                         </ul>
                     </div>
                 </div>
@@ -195,28 +195,28 @@
                     <div class="card-head"><h3>Agent AI</h3></div>
                     <div class="card-body">
                         <ul class="compare-list agent">
-                            <li>Realizuje cele</li>
-                            <li>Wielokrotne iteracje</li>
-                            <li>Używa narzędzi (API, pliki, bazy)</li>
-                            <li>Wykonuje akcje</li>
-                            <li>Proaktywny</li>
+                            <li>Realizuje zadanie do końca</li>
+                            <li>Powtarza cykl, aż osiągnie cel</li>
+                            <li>Używa narzędzi (API, pliki, bazy danych)</li>
+                            <li>Wykonuje działania, np. zapisuje pliki</li>
+                            <li>Sam wybiera kolejne kroki</li>
                         </ul>
                     </div>
                 </div>
             </div>
             <div class="callout edu-block">
-                <h3>Elementy agenta</h3>
-                <p><strong>Planer:</strong> Dekomponuje zadanie na kroki, decyduje o kolejności działań.</p>
-                <p><strong>Pamięć:</strong> Krótkoterminowa (kontekst) i długoterminowa (baza wiedzy, historia).</p>
-                <p><strong>Narzędzia:</strong> API, dostęp do plików, bazy danych, wyszukiwarki, wykonywanie kodu.</p>
-                <p class="callout-gap"><strong>Przykłady:</strong> Claude Code, GitHub Copilot Workspace, AutoGPT, Devin</p>
+                <h3>Z czego składa się agent</h3>
+                <p><strong>Planer:</strong> dzieli zadanie na kroki i ustala ich kolejność.</p>
+                <p><strong>Pamięć:</strong> krótkoterminowa to okno kontekstu, długoterminowa to zewnętrzny zapis, np. baza wiedzy albo historia wcześniejszych sesji.</p>
+                <p><strong>Narzędzia:</strong> API, dostęp do plików, bazy danych, wyszukiwarki, uruchamianie kodu.</p>
+                <p class="callout-gap"><strong>Przykłady:</strong> Claude Code, OpenAI Codex, GitHub Copilot (tryb agenta), Devin.</p>
             </div>
         </div></section>
     </main>
 
     <footer class="edu-footer"><div class="edu-footer-inner">
         <a href="index.html">← Anatomia LLM</a>
-        <span>Interaktywny przewodnik po Large Language Models</span>
+        <span>Interaktywny przewodnik po dużych modelach językowych</span>
     </div></footer>
 
     <script>
@@ -232,17 +232,17 @@
             output.innerHTML = '';
 
             const steps = [
-                { phase: 'plan', tool: null, text: 'Analizuję zadanie: potrzebuję znaleźć pliki .py i policzyć linie.' },
-                { phase: 'plan', tool: null, text: 'Strategia: 1) Wyszukaj pliki, 2) Odczytaj każdy, 3) Zlicz linie, 4) Podsumuj.' },
-                { phase: 'tool', tool: 'toolSearch', text: 'Wybieram narzędzie: Search - do znalezienia plików .py' },
-                { phase: 'execute', tool: 'toolSearch', text: 'Wykonuję: find . -name "*.py"' },
-                { phase: 'execute', tool: null, text: 'Wynik: znaleziono 3 pliki (main.py, utils.py, test.py)' },
-                { phase: 'reflect', tool: null, text: 'Refleksja: Mam listę plików. Teraz muszę policzyć linie.' },
-                { phase: 'tool', tool: 'toolBash', text: 'Wybieram narzędzie: Bash - do policzenia linii' },
+                { phase: 'plan', tool: null, text: 'Analizuję zadanie: trzeba znaleźć pliki .py i policzyć ich linie.' },
+                { phase: 'plan', tool: null, text: 'Plan: 1) znaleźć pliki .py, 2) policzyć linie poleceniem wc -l, 3) podać sumę.' },
+                { phase: 'tool', tool: 'toolSearch', text: 'Wybieram narzędzie: Search, żeby znaleźć pliki .py.' },
+                { phase: 'execute', tool: 'toolSearch', text: 'Wykonuję: Search, wzorzec **/*.py' },
+                { phase: 'execute', tool: null, text: 'Wynik: znaleziono 3 pliki (main.py, utils.py, test.py).' },
+                { phase: 'reflect', tool: null, text: 'Refleksja: mam listę plików. Cel nie jest jeszcze osiągnięty, trzeba policzyć linie.' },
+                { phase: 'tool', tool: 'toolBash', text: 'Wybieram narzędzie: Bash, żeby policzyć linie.' },
                 { phase: 'execute', tool: 'toolBash', text: 'Wykonuję: wc -l main.py utils.py test.py' },
-                { phase: 'execute', tool: null, text: 'Wynik: main.py: 142, utils.py: 87, test.py: 53' },
-                { phase: 'reflect', tool: null, text: 'Refleksja: Mam wszystkie dane. Cel osiągnięty!' },
-                { phase: 'plan', tool: null, text: 'Podsumowanie: Znaleziono 3 pliki Python, łącznie 282 linie kodu.' }
+                { phase: 'execute', tool: null, text: 'Wynik: main.py 142, utils.py 87, test.py 53, razem 282.' },
+                { phase: 'reflect', tool: null, text: 'Refleksja: mam wszystkie liczby. Cel osiągnięty.' },
+                { phase: 'reflect', tool: null, text: 'Podsumowanie: 3 pliki .py, razem 282 linie (wc -l liczy też puste linie i komentarze).' }
             ];
 
             for (const step of steps) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LLM przez API - Anatomia LLM</title>
+    <title>LLM przez API – Anatomia LLM</title>
     <link rel="icon" type="image/png" href="assets/edulab-mark-ink.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -78,6 +78,7 @@
         .flow-arrow { flex: none; color: var(--ink-3); font-size: 18px; }
         .tool-demo { margin-top: 24px; }
         .tool-demo .data-panel { min-width: 0; }
+        .tool-demo pre + .label { margin-top: 18px; }
 
         @media (max-width: 768px) {
             .roles-explanation { grid-template-columns: 1fr; gap: 12px; }
@@ -89,7 +90,7 @@
 </head>
 <body class="edu">
     <header class="edu-header"><div class="edu-header-inner">
-        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM - strona główna">
+        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM – strona główna">
             <img class="edu-logo" src="assets/edulab-mark-ink.png" alt="edulab">
             <span class="edu-wordmark">edulab</span>
         </a>
@@ -105,7 +106,7 @@
 
     <header class="page-head">
         <h1 class="app-title">LLM przez API</h1>
-        <p class="edu-lead">Większość LLM dostępna jest przez REST API. Zrozumienie struktury zapytań, ról i function calling jest kluczowe do budowania aplikacji.</p>
+        <p class="edu-lead">Większość LLM jest dostępna przez REST API. Kto buduje na nich aplikację, musi znać budowę zapytania, role wiadomości i function calling.</p>
     </header>
 
     <main class="bands">
@@ -114,15 +115,15 @@
             <div class="roles-explanation">
                 <button type="button" class="role-box" aria-pressed="false" onclick="selectRole('system')">
                     <h4><span class="role-badge system">system</span></h4>
-                    <p>Instrukcje dla modelu, persona, ograniczenia. Ustawia kontekst całej rozmowy.</p>
+                    <p>Instrukcje dla modelu: persona, zasady, ograniczenia. Ustawia kontekst całej rozmowy.</p>
                 </button>
                 <button type="button" class="role-box" aria-pressed="false" onclick="selectRole('user')">
                     <h4><span class="role-badge user">user</span></h4>
-                    <p>Wiadomości od użytkownika - pytania, polecenia, dane wejściowe.</p>
+                    <p>Wiadomości od użytkownika: pytania, polecenia, dane wejściowe.</p>
                 </button>
                 <button type="button" class="role-box" aria-pressed="false" onclick="selectRole('assistant')">
                     <h4><span class="role-badge assistant">assistant</span></h4>
-                    <p>Odpowiedzi modelu. Można też użyć do "priming" - podpowiedzi jak odpowiadać.</p>
+                    <p>Odpowiedzi modelu. Programista może też wpisać do historii przykładowe pary pytanie–odpowiedź (few-shot). Model widzi wtedy, w jakiej formie ma odpowiadać.</p>
                 </button>
             </div>
         </div></section>
@@ -168,8 +169,8 @@
         </div></section>
 
         <section class="sec"><div class="wrap">
-            <div class="sec-head"><h2>Function / Tool Calling</h2></div>
-            <p class="sec-hint">Model może "wywoływać" funkcje zdefiniowane przez programistę. To podstawa agentów i automatyzacji.</p>
+            <div class="sec-head"><h2>Function / tool calling</h2></div>
+            <p class="sec-hint">Model może „wywoływać” funkcje zdefiniowane przez programistę. Sam ich nie uruchamia: zwraca nazwę funkcji i argumenty, a funkcję wykonuje kod aplikacji. Wynik trafia z powrotem do modelu jako nowa wiadomość. Na tym mechanizmie opierają się agenci i automatyzacje.</p>
 
             <div class="tool-flow">
                 <div class="flow-box" id="fc1">
@@ -189,12 +190,12 @@
                 <span class="flow-arrow" aria-hidden="true">→</span>
                 <div class="flow-box" id="fc4">
                     <h4>4. Wykonanie</h4>
-                    <p>Twój kod</p>
+                    <p>robi to Twój kod</p>
                 </div>
                 <span class="flow-arrow" aria-hidden="true">→</span>
                 <div class="flow-box" id="fc5">
                     <h4>5. Wynik</h4>
-                    <p>do modelu</p>
+                    <p>wraca do modelu</p>
                 </div>
             </div>
 
@@ -202,43 +203,60 @@
 
             <div class="grid-2 tool-demo">
                 <div class="data-panel">
-                    <div class="label">Przykład definicji funkcji:</div>
+                    <div class="label">Definicja funkcji (pole tools):</div>
                     <pre>{
-  "name": "get_weather",
-  "description": "Pobiera aktualną pogodę dla miasta",
-  "parameters": {
-    "type": "object",
-    "properties": {
-      "city": { "type": "string", "description": "Nazwa miasta" }
-    },
-    "required": ["city"]
+  "type": "function",
+  "function": {
+    "name": "get_weather",
+    "description": "Pobiera aktualną pogodę dla miasta",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "Nazwa miasta"
+        }
+      },
+      "required": ["city"]
+    }
   }
 }</pre>
                 </div>
                 <div class="data-panel">
                     <div class="label">Model odpowiada:</div>
                     <pre>{
-  "function_call": {
-    "name": "get_weather",
-    "arguments": "{\"city\": \"Warszawa\"}"
-  }
+  "role": "assistant",
+  "tool_calls": [{
+    "id": "call_abc123",
+    "type": "function",
+    "function": {
+      "name": "get_weather",
+      "arguments": "{\"city\": \"Warszawa\"}"
+    }
+  }]
+}</pre>
+                    <div class="label">Twój kod odsyła wynik:</div>
+                    <pre>{
+  "role": "tool",
+  "tool_call_id": "call_abc123",
+  "content": "{\"temp_c\": 12}"
 }</pre>
                 </div>
             </div>
 
             <div class="callout edu-block">
-                <h3>Najlepsze praktyki API</h3>
-                <p><strong>Autoryzacja:</strong> Używaj kluczy API z ograniczonymi uprawnieniami. Nie umieszczaj ich w kodzie frontendowym.</p>
-                <p><strong>Rate limiting:</strong> Respektuj limity API. Implementuj exponential backoff przy błędach 429.</p>
-                <p><strong>Streaming:</strong> Dla lepszego UX używaj Server-Sent Events do strumieniowania odpowiedzi token po tokenie.</p>
-                <p><strong>Koszty:</strong> Monitoruj zużycie tokenów. System prompt jest wysyłany z każdym zapytaniem!</p>
+                <h3>Dobre praktyki API</h3>
+                <p><strong>Klucze API:</strong> Nadawaj kluczom tylko potrzebne uprawnienia. Trzymaj je na serwerze, nie w kodzie frontendu.</p>
+                <p><strong>Rate limiting:</strong> Przestrzegaj limitów API. Po błędzie 429 (Too Many Requests) ponawiaj zapytanie z coraz dłuższą przerwą (exponential backoff).</p>
+                <p><strong>Streaming:</strong> Przez Server-Sent Events (SSE) odpowiedź spływa token po tokenie. Użytkownik widzi tekst od razu i nie czeka na całość.</p>
+                <p><strong>Koszty:</strong> Śledź zużycie tokenów. API czatu nie pamięta poprzednich zapytań, więc system prompt jest wysyłany z każdym zapytaniem i za każdym razem zużywa tokeny.</p>
             </div>
         </div></section>
     </main>
 
     <footer class="edu-footer"><div class="edu-footer-inner">
         <a href="index.html">← Anatomia LLM</a>
-        <span>Interaktywny przewodnik po Large Language Models</span>
+        <span>Interaktywny przewodnik po dużych modelach językowych</span>
     </div></footer>
 
     <script>
@@ -249,18 +267,21 @@
 
         function updatePreview() {
             const json = {
-                model: "gpt-4",
+                model: "gpt-6-luna",
                 messages: messages,
-                temperature: 0.7,
-                max_tokens: 1000
+                max_completion_tokens: 1000
             };
 
             const preview = document.getElementById('jsonPreview');
             preview.innerHTML = syntaxHighlight(JSON.stringify(json, null, 2));
         }
 
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+        }
+
         function syntaxHighlight(json) {
-            return json
+            return escapeHtml(json)
                 .replace(/(".*?"):/g, '<span class="key">$1</span>:')
                 .replace(/: (".*?")/g, ': <span class="string">$1</span>')
                 .replace(/: (\d+\.?\d*)/g, ': <span class="number">$1</span>');
@@ -270,8 +291,8 @@
             const list = document.getElementById('messageList');
             list.innerHTML = messages.map(m => `
                 <div class="message-item ${m.role}">
-                    <span class="message-role">${m.role}</span>
-                    <span class="message-content">${m.content}</span>
+                    <span class="message-role">${escapeHtml(m.role)}</span>
+                    <span class="message-content">${escapeHtml(m.content)}</span>
                 </div>
             `).join('');
         }
