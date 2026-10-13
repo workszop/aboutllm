@@ -4,221 +4,230 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anatomia LLM - Interaktywny Przewodnik</title>
+    <link rel="icon" type="image/png" href="assets/edulab-mark-ink.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="colors_and_type.css">
+    <link rel="stylesheet" href="edu.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #fafafa;
-            color: #1a1a1a;
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-        header {
-            text-align: center;
-            padding: 4rem 2rem 3rem;
-            background: #fff;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 300;
-            letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
-        }
-        header p {
-            color: #666;
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .grid {
+        /* ─── Topic grid ─── */
+        .topic-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.5rem;
-            padding: 3rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
         }
-        .card {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            padding: 2rem;
+        .topic {
             text-decoration: none;
             color: inherit;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
+            transition: border-color .15s, box-shadow .15s;
         }
-        .card:hover {
-            border-color: #999;
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+        .topic:hover { border-color: var(--line-strong); box-shadow: var(--shadow-md); }
+        .topic:hover .topic-arrow { background: var(--yellow); color: var(--yellow-ink); }
+        .topic-icon {
+            width: 40px; height: 40px; border-radius: var(--r-sm);
+            display: grid; place-items: center;
         }
-        .card-icon {
-            width: 48px;
-            height: 48px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
+        .topic-icon svg { width: 22px; height: 22px; }
+        .c-yellow { background: var(--yellow-soft); color: var(--yellow-ink); }
+        .c-blue   { background: var(--blue-soft);   color: var(--blue-ink); }
+        .c-green  { background: var(--green-soft);  color: var(--green-ink); }
+        .c-red    { background: var(--red-soft);    color: var(--red-ink); }
+        .topic-arrow {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: grid; place-items: center; color: var(--ink-2);
+            transition: background-color .15s, color .15s;
         }
-        .card h2 {
-            font-size: 1.25rem;
-            font-weight: 500;
-            margin-bottom: 0.75rem;
-        }
-        .card p {
-            color: #666;
-            font-size: 0.95rem;
-            flex-grow: 1;
-        }
-        .card-preview {
-            margin-top: 1.5rem;
-            height: 80px;
-            background: #f8f8f8;
-            border: 1px solid #eee;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        footer {
-            text-align: center;
-            padding: 2rem;
-            color: #999;
-            font-size: 0.85rem;
-            border-top: 1px solid #e0e0e0;
-        }
-        /* Mini previews */
-        .preview-tokens { display: flex; gap: 4px; }
+        .topic-arrow svg { width: 18px; height: 18px; }
+        .topic h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+        .topic p { font-size: 15px; line-height: 1.55; }
+        .topic .card-foot { justify-content: center; min-height: 84px; }
+
+        /* ─── Mini previews ─── */
+        .preview-tokens { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
         .preview-tokens span {
-            background: #e8e8e8;
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            border-radius: 2px;
+            font-family: var(--font-mono); font-size: 12px;
+            padding: 3px 8px; border-radius: var(--r-xs);
         }
         .preview-slider {
-            width: 120px;
-            height: 4px;
-            background: linear-gradient(to right, #ddd 0%, #888 50%, #333 100%);
-            border-radius: 2px;
+            position: relative; width: 160px; height: 8px;
+            border-radius: 999px; background: var(--track);
+        }
+        .preview-slider::before {
+            content: ""; position: absolute; inset: 0 40% 0 0;
+            border-radius: 999px; background: var(--yellow);
+        }
+        .preview-slider::after {
+            content: ""; position: absolute; left: 60%; top: 50%;
+            width: 18px; height: 18px; transform: translate(-50%, -50%);
+            border-radius: 50%; background: var(--yellow); border: 2px solid var(--ink);
         }
         .preview-flow {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.7rem;
-            color: #888;
+            display: flex; align-items: center; gap: 8px;
+            font-family: var(--font-mono); font-size: 12px; color: var(--ink-3);
         }
-        .preview-flow span {
-            width: 8px;
-            height: 8px;
-            background: #ccc;
-            border-radius: 50%;
+        .preview-flow .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--green-soft); }
+        .preview-flow .llm {
+            padding: 3px 9px; border-radius: var(--r-pill);
+            background: var(--ink); color: var(--paper); font-weight: 500;
         }
-        .preview-cycle {
-            display: flex;
-            gap: 6px;
-        }
+        .preview-cycle { display: flex; gap: 8px; align-items: center; }
         .preview-cycle div {
-            width: 16px;
-            height: 16px;
-            border: 2px solid #ccc;
-            border-radius: 50%;
+            width: 18px; height: 18px; border-radius: 50%;
+            border: 2px solid var(--line-strong);
         }
+        .preview-cycle div.on { background: var(--yellow); border-color: var(--ink); }
         .preview-shield {
-            width: 32px;
-            height: 38px;
-            border: 2px solid #ccc;
-            border-radius: 4px 4px 16px 16px;
+            width: 34px; height: 40px;
+            background: var(--red-soft);
+            border-radius: 6px 6px 18px 18px;
         }
         .preview-code {
-            font-family: monospace;
-            font-size: 0.65rem;
-            color: #888;
-            text-align: left;
+            font-family: var(--font-mono); font-size: 12px; line-height: 1.5;
+            background: var(--ink); color: var(--paper);
+            padding: 8px 14px; border-radius: var(--r-sm);
+        }
+        .preview-code .k { color: var(--yellow); }
+
+        @media (max-width: 1000px) {
+            .topic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 768px) {
+            .topic-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
-<body>
-    <header>
-        <h1>Anatomia LLM</h1>
-        <p>Interaktywny przewodnik po dużych modelach językowych. Poznaj kluczowe koncepcje przez wizualizacje i symulacje.</p>
+<body class="edu">
+    <header class="edu-header"><div class="edu-header-inner">
+        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM - strona główna">
+            <img class="edu-logo" src="assets/edulab-mark-ink.png" alt="edulab">
+            <span class="edu-wordmark">edulab</span>
+        </a>
+        <nav class="edu-nav" aria-label="Tematy">
+            <a href="tokenization.html">Tokenizacja</a>
+            <a href="temperature.html">Parametry</a>
+            <a href="rag.html">RAG</a>
+            <a href="agents.html">Agenci</a>
+            <a href="security.html">Bezpieczeństwo</a>
+            <a href="api.html">API</a>
+        </nav>
+    </div></header>
+
+    <header class="page-head">
+        <h1 class="app-title">Anatomia LLM</h1>
+        <p class="edu-lead">Interaktywny przewodnik po dużych modelach językowych. Poznaj kluczowe koncepcje przez wizualizacje i symulacje.</p>
     </header>
 
-    <main class="grid">
-        <a href="tokenization.html" class="card">
-            <div class="card-icon">T</div>
-            <h2>Tokenizacja i Embedding</h2>
-            <p>Jak model "widzi" tekst? Poznaj proces dzielenia tekstu na tokeny i ich reprezentację wektorową.</p>
-            <div class="card-preview">
-                <div class="preview-tokens">
-                    <span>Cześć</span>
-                    <span>,</span>
-                    <span>świecie</span>
-                    <span>!</span>
-                </div>
-            </div>
-        </a>
+    <main class="bands">
+        <section class="sec"><div class="wrap">
+            <div class="topic-grid">
+                <a href="tokenization.html" class="card topic">
+                    <div class="card-head">
+                        <span class="topic-icon c-yellow"><i data-lucide="type"></i></span>
+                        <span class="topic-arrow"><i data-lucide="arrow-up-right"></i></span>
+                    </div>
+                    <div class="card-body">
+                        <h2>Tokenizacja i Embedding</h2>
+                        <p>Jak model "widzi" tekst? Poznaj proces dzielenia tekstu na tokeny i ich reprezentację wektorową.</p>
+                    </div>
+                    <div class="card-foot" aria-hidden="true">
+                        <div class="preview-tokens">
+                            <span class="c-yellow">Cześć</span>
+                            <span class="c-blue">,</span>
+                            <span class="c-green">świecie</span>
+                            <span class="c-red">!</span>
+                        </div>
+                    </div>
+                </a>
 
-        <a href="temperature.html" class="card">
-            <div class="card-icon">~</div>
-            <h2>Parametry Generowania</h2>
-            <p>Temperature, top-p, top-k - jak wpływają na kreatywność i precyzję odpowiedzi modelu.</p>
-            <div class="card-preview">
-                <div class="preview-slider"></div>
-            </div>
-        </a>
+                <a href="temperature.html" class="card topic">
+                    <div class="card-head">
+                        <span class="topic-icon c-blue"><i data-lucide="sliders-horizontal"></i></span>
+                        <span class="topic-arrow"><i data-lucide="arrow-up-right"></i></span>
+                    </div>
+                    <div class="card-body">
+                        <h2>Parametry Generowania</h2>
+                        <p>Temperature, top-p, top-k - jak wpływają na kreatywność i precyzję odpowiedzi modelu.</p>
+                    </div>
+                    <div class="card-foot" aria-hidden="true">
+                        <div class="preview-slider"></div>
+                    </div>
+                </a>
 
-        <a href="rag.html" class="card">
-            <div class="card-icon">+</div>
-            <h2>RAG i Kontekst</h2>
-            <p>Retrieval-Augmented Generation - jak łączyć LLM z zewnętrzną bazą wiedzy.</p>
-            <div class="card-preview">
-                <div class="preview-flow">
-                    <span></span>→<span></span>→<span></span>→ LLM
-                </div>
-            </div>
-        </a>
+                <a href="rag.html" class="card topic">
+                    <div class="card-head">
+                        <span class="topic-icon c-green"><i data-lucide="database"></i></span>
+                        <span class="topic-arrow"><i data-lucide="arrow-up-right"></i></span>
+                    </div>
+                    <div class="card-body">
+                        <h2>RAG i Kontekst</h2>
+                        <p>Retrieval-Augmented Generation - jak łączyć LLM z zewnętrzną bazą wiedzy.</p>
+                    </div>
+                    <div class="card-foot" aria-hidden="true">
+                        <div class="preview-flow">
+                            <span class="dot"></span>→<span class="dot"></span>→<span class="dot"></span>→ <span class="llm">LLM</span>
+                        </div>
+                    </div>
+                </a>
 
-        <a href="agents.html" class="card">
-            <div class="card-icon">A</div>
-            <h2>Agenci AI</h2>
-            <p>Cykl działania agenta: planowanie, wybór narzędzia, wykonanie i refleksja.</p>
-            <div class="card-preview">
-                <div class="preview-cycle">
-                    <div></div><div></div><div></div><div></div>
-                </div>
-            </div>
-        </a>
+                <a href="agents.html" class="card topic">
+                    <div class="card-head">
+                        <span class="topic-icon c-yellow"><i data-lucide="bot"></i></span>
+                        <span class="topic-arrow"><i data-lucide="arrow-up-right"></i></span>
+                    </div>
+                    <div class="card-body">
+                        <h2>Agenci AI</h2>
+                        <p>Cykl działania agenta: planowanie, wybór narzędzia, wykonanie i refleksja.</p>
+                    </div>
+                    <div class="card-foot" aria-hidden="true">
+                        <div class="preview-cycle">
+                            <div class="on"></div><div></div><div></div><div></div>
+                        </div>
+                    </div>
+                </a>
 
-        <a href="security.html" class="card">
-            <div class="card-icon">!</div>
-            <h2>Bezpieczeństwo LLM</h2>
-            <p>Halucynacje, prompt injection i guardrails - jak budować bezpieczne aplikacje.</p>
-            <div class="card-preview">
-                <div class="preview-shield"></div>
-            </div>
-        </a>
+                <a href="security.html" class="card topic">
+                    <div class="card-head">
+                        <span class="topic-icon c-red"><i data-lucide="shield-alert"></i></span>
+                        <span class="topic-arrow"><i data-lucide="arrow-up-right"></i></span>
+                    </div>
+                    <div class="card-body">
+                        <h2>Bezpieczeństwo LLM</h2>
+                        <p>Halucynacje, prompt injection i guardrails - jak budować bezpieczne aplikacje.</p>
+                    </div>
+                    <div class="card-foot" aria-hidden="true">
+                        <div class="preview-shield"></div>
+                    </div>
+                </a>
 
-        <a href="api.html" class="card">
-            <div class="card-icon">{}</div>
-            <h2>LLM przez API</h2>
-            <p>Struktura zapytań, role systemowe i function calling w praktyce.</p>
-            <div class="card-preview">
-                <div class="preview-code">
-                    {"role": "system"}<br>
-                    {"role": "user"}
-                </div>
+                <a href="api.html" class="card topic">
+                    <div class="card-head">
+                        <span class="topic-icon c-blue"><i data-lucide="braces"></i></span>
+                        <span class="topic-arrow"><i data-lucide="arrow-up-right"></i></span>
+                    </div>
+                    <div class="card-body">
+                        <h2>LLM przez API</h2>
+                        <p>Struktura zapytań, role systemowe i function calling w praktyce.</p>
+                    </div>
+                    <div class="card-foot" aria-hidden="true">
+                        <div class="preview-code">
+                            {<span class="k">"role"</span>: "system"}<br>
+                            {<span class="k">"role"</span>: "user"}
+                        </div>
+                    </div>
+                </a>
             </div>
-        </a>
+        </div></section>
     </main>
 
-    <footer>
-        Interaktywny przewodnik po Large Language Models
-    </footer>
+    <footer class="edu-footer"><div class="edu-footer-inner">
+        <span>Interaktywny przewodnik po Large Language Models</span>
+    </div></footer>
+
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script>
+        // ─── Init ───
+        if (window.lucide) lucide.createIcons();
+    </script>
 </body>
 </html>

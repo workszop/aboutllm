@@ -1,0 +1,211 @@
+/* ============================================================
+   Anatomia LLM - shared edulab chrome & components
+   Load after colors_and_type.css. Every value is a token from there.
+   ============================================================ */
+
+/* ─── Base ─── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body.edu { line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
+body.edu > main { flex: 1; }
+:focus-visible { outline: 3px solid transparent; outline-offset: 2px; box-shadow: var(--focus-ring); }
+strong { color: var(--ink); font-weight: 600; }
+.edu-block strong { color: inherit; }
+
+/* ─── Top menu ─── */
+.edu-header {
+  position: sticky; top: 0; z-index: 50; width: 100%;
+  background: var(--paper); border-bottom: 1px solid var(--line-2);
+}
+.edu-header-inner {
+  max-width: 1100px; margin: 0 auto; padding: 8px 30px;
+  display: flex; align-items: center; gap: 12px;
+}
+.edu-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--ink); flex: none; }
+.edu-logo { width: 64px; height: 64px; display: block; margin-right: -6px; }
+.edu-wordmark { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -.02em; color: var(--ink); }
+.edu-nav { margin-left: auto; display: flex; gap: 2px; flex-wrap: wrap; justify-content: flex-end; }
+.edu-nav a {
+  font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+  color: var(--ink-2); text-decoration: none; white-space: nowrap;
+  padding: 8px 12px; border-radius: var(--r-pill);
+  transition: background-color .15s, color .15s;
+}
+.edu-nav a:hover { background: var(--paper-2); color: var(--ink); }
+.edu-nav a[aria-current="page"] { background: var(--yellow); color: var(--yellow-ink); font-weight: 600; }
+
+/* ─── Page head ─── */
+.page-head {
+  max-width: 1100px; margin: 0 auto; padding: 44px 30px 36px; width: 100%;
+  text-align: left; border-bottom: 1px solid var(--line-2);
+}
+.app-title {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(2.3rem, 5vw, 3.3rem); letter-spacing: -.025em;
+  line-height: 1.05; color: var(--ink); margin: 0 0 14px;
+}
+.edu-lead { font-size: 1.15rem; line-height: 1.6; color: var(--ink-2); margin: 0; }
+.page-head:has(+ main > .sec:first-child) { border-bottom: none; padding-bottom: 52px; }
+
+/* ─── Section bands ─── */
+main.bands { padding: 0; }
+.sec { margin: 0; padding: 52px 0 60px; border-top: 1px solid var(--line); }
+.sec:nth-of-type(odd) { background: var(--paper-2); }
+.sec > .wrap { max-width: 1100px; margin: 0 auto; padding: 0 30px; }
+.sec-head { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
+.sec-head h2 { margin: 0; font-size: clamp(1.6rem, 3vw, var(--h2)); }
+.sec-head::after { content: ""; flex: 1; height: 1px; background: var(--line-2); min-width: 40px; }
+.sec-hint { font-size: var(--body-sm); color: var(--ink-3); margin: -12px 0 20px; }
+
+/* ─── Card anatomy ─── */
+.card {
+  background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm); overflow: hidden; display: flex; flex-direction: column;
+}
+.card-head {
+  padding: 12px 20px; background: var(--paper-2); border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.card-head h3, .card-head h4 { margin: 0; font-size: 18px; font-family: var(--font-display); font-weight: 600; color: var(--ink); }
+.card-head .edu-overline { margin: 0; }
+.card-body { padding: 20px; flex: 1; }
+.card-body.flush { padding: 0; }
+.card-foot {
+  padding: 12px 20px; border-top: 1px dashed var(--line-2);
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+/* vertical rhythm for blocks stacked directly in a section (not grid items) */
+.wrap > :is(.card, .grid-2, .pill-group, .edu-seg, .data-panel) + :is(.card, .grid-2, .data-panel) { margin-top: 20px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* ─── Callouts (full solid blocks, never a coloured edge) ─── */
+.callout {
+  margin-top: 24px; padding: 20px 24px; border-radius: var(--r-lg);
+  background: var(--blue-soft); color: var(--blue-ink);
+}
+.callout h3 { font-family: var(--font-display); font-size: 19px; font-weight: 600; margin-bottom: 6px; }
+.callout p { font-size: 15px; line-height: 1.6; }
+.callout p + p { margin-top: 8px; }
+.callout.yellow { background: var(--yellow-soft); color: var(--yellow-ink); }
+.callout.green { background: var(--green-soft); color: var(--green-ink); }
+.callout.red { background: var(--red-soft); color: var(--red-ink); }
+
+/* ─── Dark data panel (code / JSON / numbers) ─── */
+.data-panel {
+  background: var(--ink); color: var(--paper); border-radius: var(--r-lg);
+  padding: 18px 20px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6;
+}
+.data-panel .label {
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--paper) 62%, transparent); margin-bottom: 10px;
+}
+
+/* ─── Buttons ─── */
+.btn, button.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-display); font-weight: 600; font-size: 15px;
+  background: var(--yellow); color: var(--on-primary);
+  border: none; border-radius: var(--r-pill); padding: 11px 22px; cursor: pointer;
+  box-shadow: var(--shadow-primary);
+  transition: background-color .15s, transform .12s cubic-bezier(.32,.72,.32,1);
+}
+.btn:hover { background: var(--yellow-600); }
+.btn:active { transform: scale(.96); }
+.btn:disabled { background: var(--paper-3); color: var(--ink-3); box-shadow: none; cursor: not-allowed; }
+.btn-ghost, button.btn-ghost {
+  background: var(--surface); color: var(--ink); box-shadow: none;
+  border: 1px solid var(--line-strong);
+}
+.btn-ghost:hover { background: var(--paper-2); }
+
+/* Option pills: separate buttons, each a full pill; active = solid yellow */
+.pill-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.pill {
+  font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+  background: var(--surface); color: var(--ink-2); cursor: pointer;
+  border: 1px solid var(--line-strong); border-radius: var(--r-pill); padding: 8px 16px;
+  transition: background-color .15s, color .15s, border-color .15s;
+}
+.pill:hover { background: var(--paper-2); color: var(--ink); }
+.pill.active { background: var(--yellow); color: var(--yellow-ink); border-color: var(--yellow); font-weight: 600; }
+
+/* Segmented control: borderless stone track, full pills */
+.edu-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; background: var(--paper-3); border-radius: var(--r-pill); }
+.edu-seg button {
+  border: none; background: transparent; padding: 8px 16px; border-radius: var(--r-pill);
+  font-family: var(--font-sans); font-size: 14px; font-weight: 600; color: var(--ink-2); cursor: pointer;
+  transition: background-color .15s, color .15s;
+}
+.edu-seg button:hover { color: var(--ink); }
+.edu-seg button.active { background: var(--yellow); color: var(--yellow-ink); }
+
+/* ─── Form controls ─── */
+.field-label, label.field-label {
+  display: block; font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: .1em; color: var(--ink); margin-bottom: 8px;
+}
+.input, textarea.input, select.input, input.input {
+  width: 100%; padding: 11px 14px; font: inherit; font-size: 15px;
+  border: 1px solid var(--line-strong); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--ink);
+}
+textarea.input { resize: vertical; line-height: 1.5; }
+.input::placeholder { color: var(--ink-3); }
+input[type="range"] { width: 100%; accent-color: var(--yellow); }
+input[type="range"].edu-range {
+  -webkit-appearance: none; appearance: none; height: 8px; border-radius: 999px;
+  background: var(--track); outline: none; margin: 8px 0;
+}
+input[type="range"].edu-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--yellow); border: 2px solid var(--ink); box-shadow: var(--shadow-sm); cursor: pointer;
+}
+input[type="range"].edu-range::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--yellow); border: 2px solid var(--ink); box-shadow: var(--shadow-sm); cursor: pointer;
+}
+
+/* ─── Helpers ─── */
+.mono { font-family: var(--font-mono); }
+.muted { color: var(--ink-3); }
+.text-danger { color: var(--red-600); }
+.text-success { color: var(--green-600); }
+.small { font-size: var(--body-sm); }
+.tiny { font-size: 12px; }
+
+/* ─── Footer ─── */
+.edu-footer { border-top: 1px solid var(--line-2); background: var(--paper); }
+.edu-footer-inner {
+  max-width: 1100px; margin: 0 auto; padding: 22px 30px;
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3);
+  display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.edu-footer a { color: var(--ink-2); text-decoration: none; }
+.edu-footer a:hover { color: var(--ink); text-decoration: underline; }
+
+/* ─── Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .edu-header-inner { padding: 6px 16px; flex-wrap: wrap; gap: 4px 12px; }
+  .edu-logo { width: 48px; height: 48px; }
+  .edu-nav {
+    margin-left: 0; width: 100%; flex-wrap: nowrap; justify-content: flex-start;
+    overflow-x: auto; padding-bottom: 6px; scrollbar-width: none;
+  }
+  .edu-nav::-webkit-scrollbar { display: none; }
+  .edu-header { position: static; }
+  .page-head { padding: 28px 16px 32px; }
+  .page-head:has(+ main > .sec:first-child) { padding-bottom: 32px; }
+  .sec { padding: 36px 0 44px; }
+  .sec > .wrap { padding: 0 16px; }
+  .sec-head { flex-direction: column; align-items: stretch; gap: 12px; }
+  .sec-head::after { flex: none; width: 100%; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .card-body { padding: 16px; }
+  .card-head, .card-foot { padding: 12px 16px; }
+  .edu-footer-inner { padding: 20px 16px; }
+}

@@ -4,267 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RAG i Fine-tuning - Anatomia LLM</title>
+    <link rel="icon" type="image/png" href="assets/edulab-mark-ink.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="colors_and_type.css">
+    <link rel="stylesheet" href="edu.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #fafafa;
-            color: #1a1a1a;
-            line-height: 1.6;
-        }
-        nav {
-            padding: 1rem 2rem;
-            border-bottom: 1px solid #e0e0e0;
-            background: #fff;
-        }
-        nav a { color: #666; text-decoration: none; font-size: 0.9rem; }
-        nav a:hover { color: #000; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
-        h1 { font-size: 2rem; font-weight: 400; margin-bottom: 1rem; }
-        .intro { color: #666; margin-bottom: 3rem; font-size: 1.1rem; }
-        .section {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        .section h2 { font-size: 1.1rem; font-weight: 500; margin-bottom: 1.5rem; }
-
-        /* Context window */
-        .context-selector { margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .ctx-btn {
-            padding: 0.5rem 1rem;
-            border: 1px solid #ddd;
-            background: #fff;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-        .ctx-btn:hover { border-color: #999; }
-        .ctx-btn.active { background: #333; color: #fff; border-color: #333; }
-        .context-visual {
-            background: #f8f8f8;
-            border: 1px solid #e0e0e0;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-        }
+        /* ─── Context window ─── */
         .context-bar {
-            height: 40px;
-            background: #e0e0e0;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 1rem;
+            height: 40px; border-radius: var(--r-pill); background: var(--paper-3);
+            position: relative; overflow: hidden; margin-bottom: 10px;
         }
         .context-fill {
-            height: 100%;
-            background: linear-gradient(to right, #333 0%, #555 100%);
-            transition: width 0.5s ease;
-            display: flex;
-            align-items: center;
-            padding-left: 1rem;
-            color: #fff;
-            font-size: 0.8rem;
+            height: 100%; background: var(--yellow); transition: width .5s ease;
+            display: flex; align-items: center; padding-left: 16px;
         }
-        .context-info { display: flex; justify-content: space-between; font-size: 0.85rem; color: #666; }
-        .context-examples { margin-top: 1rem; font-size: 0.85rem; }
-        .context-examples p { margin-bottom: 0.5rem; }
+        .context-fill span {
+            font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+            color: var(--yellow-ink); white-space: nowrap;
+        }
+        .context-info {
+            display: flex; justify-content: space-between; gap: 12px;
+            font-family: var(--font-mono); font-size: 12px; color: var(--ink-3);
+        }
+        .context-examples { display: flex; flex-direction: column; gap: 4px; }
+        .context-examples p { font-size: 15px; }
 
-        /* RAG flow */
-        .rag-flow {
-            display: flex;
-            align-items: stretch;
-            gap: 0.5rem;
-            margin: 2rem 0;
-            flex-wrap: wrap;
-        }
+        /* ─── RAG flow ─── */
+        .rag-flow { display: flex; align-items: stretch; gap: 24px; margin-bottom: 24px; }
         .flow-step {
-            flex: 1;
-            min-width: 120px;
-            background: #f8f8f8;
-            border: 1px solid #e0e0e0;
-            padding: 1.5rem 0.75rem;
-            text-align: center;
-            position: relative;
-            transition: all 0.3s;
+            flex: 1; min-width: 0; position: relative; text-align: center;
+            padding: 18px 12px; border-radius: var(--r-lg);
+            background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong);
+            transition: background-color .3s, border-color .3s, color .3s;
         }
-        .flow-step.active { background: #333; color: #fff; border-color: #333; }
         .flow-step::after {
-            content: '→';
-            position: absolute;
-            right: -0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #ccc;
-            font-size: 1rem;
-            z-index: 1;
+            content: '→'; position: absolute; right: -19px; top: 50%; transform: translateY(-50%);
+            color: var(--ink-3); font-size: 16px;
         }
         .flow-step:last-child::after { display: none; }
-        .flow-step h3 { font-size: 0.8rem; margin-bottom: 0.25rem; }
-        .flow-step p { font-size: 0.7rem; opacity: 0.7; }
-        .flow-step.active p { color: #ccc; }
+        .flow-step.active { background: var(--yellow); border-color: var(--yellow); color: var(--yellow-ink); }
+        .flow-step h3 { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: inherit; margin-bottom: 4px; }
+        .flow-step p { font-size: 13px; line-height: 1.4; color: inherit; }
 
-        /* Demo area */
-        .demo-area { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
-        .panel { border: 1px solid #e0e0e0; }
-        .panel-header {
-            background: #f5f5f5;
-            padding: 0.75rem 1rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .panel-content { padding: 1rem; min-height: 200px; }
-        .query-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-        .query-input:focus { outline: none; border-color: #999; }
-        button {
-            padding: 0.5rem 1rem;
-            background: #333;
-            color: #fff;
-            border: none;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
-        button:hover { background: #000; }
+        /* ─── RAG demo ─── */
+        .doc-list { display: flex; flex-direction: column; gap: 8px; }
         .doc-item {
-            padding: 0.75rem;
-            border: 1px solid #eee;
-            margin-bottom: 0.5rem;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-            cursor: pointer;
+            padding: 10px 14px; border-radius: var(--r-sm);
+            background: var(--surface); color: var(--ink); border: 1px solid var(--line-2);
+            font-size: 14px; line-height: 1.45;
+            transition: background-color .3s, border-color .3s, color .3s;
         }
-        .doc-item:hover { border-color: #ccc; }
-        .doc-item.selected { border-color: #333; background: #f8f8f8; }
-        .doc-item .score { float: right; font-family: monospace; color: #888; font-size: 0.75rem; }
+        .doc-item strong { color: inherit; }
+        .doc-snippet { color: var(--ink-3); font-size: 13px; }
+        .doc-item .score {
+            float: right; margin-left: 8px; font-family: var(--font-mono); font-size: 12px;
+            font-weight: 500; color: inherit;
+        }
+        .doc-item.selected { background: var(--blue-soft); border-color: var(--blue-soft); color: var(--blue-ink); }
+        .doc-item.selected .doc-snippet { color: inherit; }
+        .query-row { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
         .result-text {
-            background: #f8f8f8;
-            padding: 1rem;
-            font-size: 0.9rem;
-            min-height: 100px;
-            border: 1px solid #eee;
+            margin-top: 16px; padding: 14px 16px; min-height: 110px;
+            border-radius: var(--r-md); background: var(--paper-2); border: 1px solid var(--line);
+            font-size: 15px; line-height: 1.6; color: var(--ink-2);
         }
-        .result-text .source { display: inline; background: #e8e8e8; padding: 0 4px; font-size: 0.8rem; }
+        .result-text .source {
+            display: inline-block; font-family: var(--font-mono); font-size: 12px; color: var(--ink);
+            background: var(--paper-3); padding: 1px 8px; border-radius: var(--r-xs);
+        }
+        .result-sources { font-size: 13px; color: var(--ink-3); }
 
-        /* Context meter */
-        .context-meter { margin-top: 2rem; }
-        .meter-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.5rem; }
-        .meter-bar { height: 24px; background: #e8e8e8; position: relative; }
-        .meter-fill { height: 100%; background: #333; transition: width 0.5s; }
-        .meter-marker { position: absolute; top: 0; height: 100%; border-left: 2px dashed #999; }
+        /* ─── Context meter ─── */
+        .meter-label {
+            display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+            font-size: 14px; color: var(--ink-2); margin-bottom: 10px;
+        }
+        .meter-label #contextUsage { font-family: var(--font-mono); font-size: 13px; color: var(--ink); }
+        .meter-bar { height: 24px; border-radius: var(--r-xs); background: var(--paper-3); position: relative; overflow: hidden; }
+        .meter-fill { height: 100%; background: var(--yellow); transition: width .5s; }
+        .meter-marker { position: absolute; top: 0; height: 100%; border-left: 2px dashed var(--ink-3); }
 
-        /* Decision tree */
-        .decision-tree { padding: 1rem 0; }
+        /* ─── Decision tree ─── */
+        .decision-tree { display: flex; flex-direction: column; align-items: center; }
         .tree-node {
-            background: #f8f8f8;
-            border: 2px solid #e0e0e0;
-            padding: 1rem 1.5rem;
-            margin: 0.5rem auto;
-            max-width: 400px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
+            width: 100%; max-width: 520px; text-align: center; padding: 18px 24px;
+            border-radius: var(--r-lg); background: var(--surface);
+            border: 1px solid var(--line-2); box-shadow: var(--shadow-sm);
         }
-        .tree-node:hover { border-color: #999; }
-        .tree-node.active { border-color: #333; background: #333; color: #fff; }
-        .tree-node.question { border-radius: 8px; }
-        .tree-node.answer { border-radius: 0; background: #e8e8e8; }
-        .tree-node.answer.active { background: #555; }
-        .tree-node h4 { font-size: 0.95rem; margin-bottom: 0.25rem; }
-        .tree-node p { font-size: 0.8rem; opacity: 0.8; }
-        .tree-options { display: flex; justify-content: center; gap: 1rem; margin: 1rem 0; }
-        .tree-option {
-            padding: 0.5rem 1.5rem;
-            border: 1px solid #ddd;
-            background: #fff;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-        .tree-option:hover { border-color: #333; }
-        .tree-option.selected { background: #333; color: #fff; border-color: #333; }
-        .tree-connector { text-align: center; color: #999; font-size: 1.2rem; }
+        .tree-node h4 { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+        .tree-node h4:last-child { margin-bottom: 0; }
+        .tree-node p { font-size: 14px; color: var(--ink-3); }
+        .tree-options { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+        .tree-option.selected { background: var(--blue-soft); border-color: var(--blue-soft); color: var(--blue-ink); font-weight: 600; }
+        .tree-connector { text-align: center; color: var(--ink-3); font-size: 20px; line-height: 1; margin: 2px 0 14px; }
         .tree-result {
-            background: #f0f0f0;
-            border: 2px solid #333;
-            padding: 1.5rem;
-            margin-top: 1rem;
-            text-align: center;
+            width: 100%; max-width: 520px; text-align: center; padding: 22px 24px;
+            border-radius: var(--r-lg); background: var(--green-soft); color: var(--green-ink);
         }
-        .tree-result h4 { font-size: 1rem; margin-bottom: 0.5rem; }
-        .tree-result p { font-size: 0.85rem; color: #666; }
-        .tree-reset {
-            margin-top: 1rem;
-            background: #666;
-        }
+        .tree-result h4 { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: inherit; margin-bottom: 6px; }
+        .tree-result p { font-size: 15px; color: inherit; }
+        .tree-reset { margin-top: 16px; }
 
-        .explanation {
-            background: #f8f8f8;
-            padding: 1.5rem;
-            margin-top: 2rem;
-            border-left: 3px solid #ddd;
-        }
-        .explanation h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.5rem; }
-        .explanation p { font-size: 0.9rem; color: #666; margin-bottom: 0.5rem; }
-
-        .comparison-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
-        .comparison-item { padding: 1rem; background: #fff; border: 1px solid #ddd; }
-        .comparison-item h4 { font-size: 0.85rem; margin-bottom: 0.5rem; }
-        .comparison-item p { font-size: 0.8rem; color: #666; }
+        /* ─── Summary ─── */
+        .comparison-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .comparison-grid .card-body p { font-size: 15px; }
 
         @media (max-width: 768px) {
-            .demo-area { grid-template-columns: 1fr; }
-            .comparison-grid { grid-template-columns: 1fr; }
-            .rag-flow { flex-direction: column; }
+            .rag-flow { flex-direction: column; gap: 10px; }
+            .flow-step { padding: 12px; }
             .flow-step::after { display: none; }
-            .tree-options { flex-direction: column; }
+            .tree-options { flex-direction: column; align-items: stretch; width: 100%; max-width: 520px; }
+            .comparison-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
-<body>
-    <nav><a href="index.html">← Powrót do strony głównej</a></nav>
+<body class="edu">
+    <header class="edu-header"><div class="edu-header-inner">
+        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM - strona główna">
+            <img class="edu-logo" src="assets/edulab-mark-ink.png" alt="edulab">
+            <span class="edu-wordmark">edulab</span>
+        </a>
+        <nav class="edu-nav" aria-label="Tematy">
+            <a href="tokenization.html">Tokenizacja</a>
+            <a href="temperature.html">Parametry</a>
+            <a href="rag.html" aria-current="page">RAG</a>
+            <a href="agents.html">Agenci</a>
+            <a href="security.html">Bezpieczeństwo</a>
+            <a href="api.html">API</a>
+        </nav>
+    </div></header>
 
-    <div class="container">
-        <h1>RAG i Fine-tuning</h1>
-        <p class="intro">Jak dostarczyć modelowi wiedzę? Poznaj okno kontekstowe, RAG i zdecyduj, kiedy warto robić fine-tuning.</p>
+    <header class="page-head">
+        <h1 class="app-title">RAG i Fine-tuning</h1>
+        <p class="edu-lead">Jak dostarczyć modelowi wiedzę? Poznaj okno kontekstowe, RAG i zdecyduj, kiedy warto robić fine-tuning.</p>
+    </header>
 
-        <div class="section">
-            <h2>1. Okno kontekstowe - ile model może "pamiętać"?</h2>
-            <div class="context-selector">
-                <button class="ctx-btn active" onclick="setContext(4096)">4K tokenów</button>
-                <button class="ctx-btn" onclick="setContext(8192)">8K tokenów</button>
-                <button class="ctx-btn" onclick="setContext(32000)">32K tokenów</button>
-                <button class="ctx-btn" onclick="setContext(128000)">128K tokenów</button>
-                <button class="ctx-btn" onclick="setContext(200000)">200K tokenów</button>
+    <main class="bands">
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Okno kontekstowe - ile model może "pamiętać"?</h2></div>
+            <div class="pill-group">
+                <button class="pill ctx-btn active" onclick="setContext(4096)">4K tokenów</button>
+                <button class="pill ctx-btn" onclick="setContext(8192)">8K tokenów</button>
+                <button class="pill ctx-btn" onclick="setContext(32000)">32K tokenów</button>
+                <button class="pill ctx-btn" onclick="setContext(128000)">128K tokenów</button>
+                <button class="pill ctx-btn" onclick="setContext(200000)">200K tokenów</button>
             </div>
-            <div class="context-visual">
-                <div class="context-bar">
-                    <div class="context-fill" id="contextFillBar" style="width:25%">
-                        <span id="contextLabel">~1000 tokenów</span>
+            <div class="card">
+                <div class="card-body">
+                    <div class="context-bar">
+                        <div class="context-fill" id="contextFillBar" style="width:25%">
+                            <span id="contextLabel">~1000 tokenów</span>
+                        </div>
+                    </div>
+                    <div class="context-info">
+                        <span>0</span>
+                        <span id="contextMax">4,096 tokenów</span>
                     </div>
                 </div>
-                <div class="context-info">
-                    <span>0</span>
-                    <span id="contextMax">4,096 tokenów</span>
-                </div>
-                <div class="context-examples" id="contextExamples">
-                    <p><strong>Co się mieści w 4K tokenach:</strong></p>
-                    <p>• ~3000 słów tekstu (6 stron A4)</p>
-                    <p>• ~200 linii kodu</p>
-                    <p>• Krótki artykuł lub rozdział książki</p>
+                <div class="card-foot">
+                    <div class="context-examples" id="contextExamples" aria-live="polite">
+                        <p><strong>Co się mieści w 4K tokenach:</strong></p>
+                        <p>• ~3000 słów tekstu (6 stron A4)</p>
+                        <p>• ~200 linii kodu</p>
+                        <p>• Krótki artykuł lub rozdział książki</p>
+                    </div>
                 </div>
             </div>
-            <div class="explanation">
+            <div class="callout edu-block">
                 <p><strong>Context window</strong> to maksymalna ilość tekstu, którą model może przetworzyć naraz. Obejmuje zarówno input (prompt) jak i output (odpowiedź). Im większe okno, tym więcej informacji możesz przekazać.</p>
             </div>
-        </div>
+        </div></section>
 
-        <div class="section">
-            <h2>2. RAG - Retrieval-Augmented Generation</h2>
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>RAG - Retrieval-Augmented Generation</h2></div>
             <div class="rag-flow">
                 <div class="flow-step" id="step1">
                     <h3>1. Pytanie</h3>
@@ -288,70 +202,79 @@
                 </div>
             </div>
 
-            <div class="demo-area">
-                <div class="panel">
-                    <div class="panel-header">Baza wiedzy (dokumenty)</div>
-                    <div class="panel-content" id="documents"></div>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-head"><h4>Baza wiedzy (dokumenty)</h4></div>
+                    <div class="card-body doc-list" id="documents"></div>
                 </div>
-                <div class="panel">
-                    <div class="panel-header">Zapytanie i wynik</div>
-                    <div class="panel-content">
-                        <input type="text" class="query-input" id="queryInput" placeholder="Zadaj pytanie..." value="Jakie są parametry generowania w LLM?">
-                        <button onclick="runRAG()">Wyszukaj i generuj</button>
-                        <div class="result-text" id="resultText" style="margin-top:1rem;">
+                <div class="card">
+                    <div class="card-head"><h4>Zapytanie i wynik</h4></div>
+                    <div class="card-body">
+                        <div class="query-row">
+                            <input type="text" class="input" id="queryInput" aria-label="Zapytanie" placeholder="Zadaj pytanie..." value="Jakie są parametry generowania w LLM?">
+                            <button class="btn" onclick="runRAG()">Wyszukaj i generuj</button>
+                        </div>
+                        <div class="result-text" id="resultText" aria-live="polite">
                             Kliknij przycisk, aby uruchomić proces RAG...
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="context-meter">
-                <div class="meter-label">
-                    <span>Wykorzystanie okna kontekstowego</span>
-                    <span id="contextUsage">0 / 8000 tokenów</span>
-                </div>
-                <div class="meter-bar">
-                    <div class="meter-fill" id="contextFill" style="width:0%"></div>
-                    <div class="meter-marker" style="left:25%" title="System prompt"></div>
-                    <div class="meter-marker" style="left:75%" title="Limit bezpieczny"></div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="meter-label">
+                        <span>Wykorzystanie okna kontekstowego</span>
+                        <span id="contextUsage">0 / 8000 tokenów</span>
+                    </div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="contextFill" style="width:0%"></div>
+                        <div class="meter-marker" style="left:25%" title="System prompt"></div>
+                        <div class="meter-marker" style="left:75%" title="Limit bezpieczny"></div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </div></section>
 
-        <div class="section">
-            <h2>3. Drzewo decyzyjne: RAG vs Fine-tuning</h2>
-            <p style="color:#666;font-size:0.9rem;margin-bottom:1.5rem;">Odpowiedz na pytania, aby dowiedzieć się, jakie podejście będzie najlepsze.</p>
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Drzewo decyzyjne: RAG vs Fine-tuning</h2></div>
+            <p class="sec-hint">Odpowiedz na pytania, aby dowiedzieć się, jakie podejście będzie najlepsze.</p>
 
-            <div class="decision-tree" id="decisionTree">
+            <div class="decision-tree" id="decisionTree" aria-live="polite">
                 <div class="tree-node question active" id="q1">
                     <h4>Czy masz dużo specyficznych danych domenowych?</h4>
                     <p>np. dokumentacja firmy, baza wiedzy, specjalistyczne treści</p>
                 </div>
                 <div class="tree-options" id="o1">
-                    <button class="tree-option" onclick="answer(1, 'yes')">Tak, mam dużą bazę</button>
-                    <button class="tree-option" onclick="answer(1, 'no')">Nie, dane są ogólne</button>
+                    <button class="pill tree-option" onclick="answer(1, 'yes')">Tak, mam dużą bazę</button>
+                    <button class="pill tree-option" onclick="answer(1, 'no')">Nie, dane są ogólne</button>
                 </div>
             </div>
-        </div>
+        </div></section>
 
-        <div class="explanation">
-            <h3>Podsumowanie: kiedy co wybrać?</h3>
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Podsumowanie: kiedy co wybrać?</h2></div>
             <div class="comparison-grid">
-                <div class="comparison-item">
-                    <h4>Prompt Engineering</h4>
-                    <p>Dla prostych zadań, gdzie cały kontekst mieści się w jednym zapytaniu. Szybkie, bez infrastruktury.</p>
+                <div class="card">
+                    <div class="card-head"><h4>Prompt Engineering</h4></div>
+                    <div class="card-body"><p>Dla prostych zadań, gdzie cały kontekst mieści się w jednym zapytaniu. Szybkie, bez infrastruktury.</p></div>
                 </div>
-                <div class="comparison-item">
-                    <h4>RAG</h4>
-                    <p>Gdy potrzebujesz aktualnych danych, dużej bazy wiedzy lub źródeł. Łatwiejsze do aktualizacji.</p>
+                <div class="card">
+                    <div class="card-head"><h4>RAG</h4></div>
+                    <div class="card-body"><p>Gdy potrzebujesz aktualnych danych, dużej bazy wiedzy lub źródeł. Łatwiejsze do aktualizacji.</p></div>
                 </div>
-                <div class="comparison-item">
-                    <h4>Fine-tuning</h4>
-                    <p>Dla specyficznego stylu/formatu odpowiedzi, wiedzy domenowej. Droższe, trudniejsze w utrzymaniu.</p>
+                <div class="card">
+                    <div class="card-head"><h4>Fine-tuning</h4></div>
+                    <div class="card-body"><p>Dla specyficznego stylu/formatu odpowiedzi, wiedzy domenowej. Droższe, trudniejsze w utrzymaniu.</p></div>
                 </div>
             </div>
-        </div>
-    </div>
+        </div></section>
+    </main>
+
+    <footer class="edu-footer"><div class="edu-footer-inner">
+        <a href="index.html">← Anatomia LLM</a>
+        <span>Interaktywny przewodnik po Large Language Models</span>
+    </div></footer>
 
     <script>
         // Context window visualization
@@ -408,7 +331,7 @@
             container.innerHTML = knowledgeBase.map(doc => `
                 <div class="doc-item" data-id="${doc.id}">
                     <strong>${doc.title}</strong><br>
-                    <span style="color:#666;font-size:0.8rem;">${doc.content.substring(0, 60)}...</span>
+                    <span class="doc-snippet">${doc.content.substring(0, 60)}...</span>
                 </div>
             `).join('');
         }
@@ -472,7 +395,7 @@
             resultText.innerHTML = `
                 <strong>Odpowiedź:</strong><br><br>
                 ${topDocs.map(d => d.content).join(' ')}<br><br>
-                <span style="font-size:0.8rem;color:#888;">Źródła: ${sources}</span>
+                <span class="result-sources">Źródła: ${sources}</span>
             `;
         }
 
@@ -524,8 +447,8 @@
                     <h4>${qText}</h4>
                 </div>
                 <div class="tree-options" id="o${qNum}">
-                    <button class="tree-option" onclick="answer(${qNum}, 'yes')">Tak</button>
-                    <button class="tree-option" onclick="answer(${qNum}, 'no')">Nie</button>
+                    <button class="pill tree-option" onclick="answer(${qNum}, 'yes')">Tak</button>
+                    <button class="pill tree-option" onclick="answer(${qNum}, 'no')">Nie</button>
                 </div>
             `;
 
@@ -545,7 +468,7 @@
                 <div class="tree-result">
                     <h4>Rekomendacja: ${titles[type]}</h4>
                     <p>${text}</p>
-                    <button class="tree-reset" onclick="resetTree()">Zacznij od nowa</button>
+                    <button class="btn btn-ghost tree-reset" onclick="resetTree()">Zacznij od nowa</button>
                 </div>
             `;
         }
@@ -558,8 +481,8 @@
                     <p>np. dokumentacja firmy, baza wiedzy, specjalistyczne treści</p>
                 </div>
                 <div class="tree-options" id="o1">
-                    <button class="tree-option" onclick="answer(1, 'yes')">Tak, mam dużą bazę</button>
-                    <button class="tree-option" onclick="answer(1, 'no')">Nie, dane są ogólne</button>
+                    <button class="pill tree-option" onclick="answer(1, 'yes')">Tak, mam dużą bazę</button>
+                    <button class="pill tree-option" onclick="answer(1, 'no')">Nie, dane są ogólne</button>
                 </div>
             `;
         }

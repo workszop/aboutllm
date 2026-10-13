@@ -4,288 +4,206 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LLM przez API - Anatomia LLM</title>
+    <link rel="icon" type="image/png" href="assets/edulab-mark-ink.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="colors_and_type.css">
+    <link rel="stylesheet" href="edu.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #fafafa;
-            color: #1a1a1a;
-            line-height: 1.6;
+        /* ─── Role chips (solid pills) ─── */
+        .role-badge, .message-role {
+            display: inline-block; flex: none;
+            font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+            text-transform: uppercase; letter-spacing: .08em; line-height: 1.4;
+            padding: 4px 10px; border-radius: var(--r-pill);
+            background: var(--paper-3); color: var(--ink);
         }
-        nav {
-            padding: 1rem 2rem;
-            border-bottom: 1px solid #e0e0e0;
-            background: #fff;
-        }
-        nav a { color: #666; text-decoration: none; font-size: 0.9rem; }
-        nav a:hover { color: #000; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
-        h1 { font-size: 2rem; font-weight: 400; margin-bottom: 1rem; }
-        .intro { color: #666; margin-bottom: 3rem; font-size: 1.1rem; }
-        .section {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        .section h2 { font-size: 1.1rem; font-weight: 500; margin-bottom: 1.5rem; }
+        .role-badge.system, .message-item.system .message-role { background: var(--ink); color: var(--paper); }
+        .role-badge.user, .message-item.user .message-role { background: var(--blue-soft); color: var(--blue-ink); }
+        .role-badge.assistant, .message-item.assistant .message-role { background: var(--green-soft); color: var(--green-ink); }
 
-        .api-builder {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-        .builder-panel h3 {
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #eee;
-        }
-        .message-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        .message-item {
-            display: flex;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            background: #f8f8f8;
-            border: 1px solid #e8e8e8;
-            font-size: 0.85rem;
-        }
-        .message-item.system { border-left: 3px solid #666; }
-        .message-item.user { border-left: 3px solid #333; }
-        .message-item.assistant { border-left: 3px solid #999; }
-        .message-role {
-            font-weight: 500;
-            min-width: 70px;
-            color: #666;
-        }
-        .message-content {
-            flex: 1;
-            font-family: monospace;
-            font-size: 0.8rem;
-        }
-        .add-message {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .add-message select, .add-message input {
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            font-size: 0.85rem;
-        }
-        .add-message input { flex: 1; }
-        .add-message select { width: 100px; }
-        button {
-            padding: 0.5rem 1rem;
-            background: #333;
-            color: #fff;
-            border: none;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
-        button:hover { background: #000; }
-        button.secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-        button.secondary:hover { background: #e0e0e0; }
-
-        .json-preview {
-            background: #1a1a1a;
-            color: #e0e0e0;
-            padding: 1rem;
-            font-family: monospace;
-            font-size: 0.8rem;
-            overflow-x: auto;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .json-preview .key { color: #9cdcfe; }
-        .json-preview .string { color: #ce9178; }
-        .json-preview .number { color: #b5cea8; }
-
-        .roles-explanation {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
+        /* ─── Roles ─── */
+        .roles-explanation { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .role-box {
-            padding: 1rem;
-            border: 1px solid #e0e0e0;
-            transition: all 0.2s;
-            cursor: pointer;
+            display: flex; flex-direction: column; text-align: left; font: inherit; cursor: pointer;
+            background: var(--surface); color: var(--ink);
+            border: 1px solid var(--line-strong); border-radius: var(--r-lg); overflow: hidden;
+            transition: background-color .15s, border-color .15s;
         }
-        .role-box:hover { border-color: #999; }
-        .role-box.active { border-color: #333; background: #f8f8f8; }
         .role-box h4 {
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            display: flex; align-items: center; padding: 12px 20px; margin: 0;
+            background: var(--paper-2); border-bottom: 1px solid var(--line);
         }
-        .role-badge {
-            padding: 2px 8px;
-            font-size: 0.7rem;
-            background: #e8e8e8;
-            border-radius: 2px;
-        }
-        .role-box p { font-size: 0.8rem; color: #666; }
+        .role-box p { padding: 16px 20px 20px; font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+        .role-box:hover { background: var(--paper-2); }
+        .role-box.active { background: var(--yellow); border-color: var(--yellow); }
+        .role-box.active h4 { background: var(--yellow); border-bottom-color: transparent; }
+        .role-box.active p { color: var(--yellow-ink); }
 
-        .tool-calling {
-            margin-top: 2rem;
+        /* ─── API builder ─── */
+        .api-builder { align-items: start; }
+        .message-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+        .message-item {
+            display: flex; align-items: baseline; gap: 12px; padding: 10px 12px;
+            background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--r-sm);
         }
-        .tool-flow {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin: 1.5rem 0;
-            flex-wrap: wrap;
+        .message-content { flex: 1; min-width: 0; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: 13px; color: var(--ink); }
+        .add-message { display: flex; gap: 8px; }
+        .add-message select.input { width: 130px; flex: none; }
+        .add-message input.input { flex: 1; min-width: 0; }
+        .add-message .btn { flex: none; padding: 11px 18px; font-size: 18px; line-height: 1; }
+        .card-foot .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .json-preview { min-width: 0; }
+        .json-preview pre, .tool-demo pre {
+            margin: 0; font: inherit; white-space: pre; overflow-x: auto;
         }
+        .json-preview pre { max-height: 400px; overflow-y: auto; }
+        .json-preview .key { color: var(--yellow); }
+        .json-preview .string { color: var(--green); }
+        .json-preview .number { color: var(--blue); }
+
+        /* ─── Tool calling flow ─── */
+        .tool-flow { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
         .flow-box {
-            padding: 1rem;
-            background: #f8f8f8;
-            border: 1px solid #e0e0e0;
-            text-align: center;
-            min-width: 120px;
+            flex: 1; min-width: 0; padding: 14px 12px; text-align: center;
+            background: var(--surface); color: var(--ink);
+            border: 1px solid var(--line-strong); border-radius: var(--r-md);
+            transition: background-color .2s, border-color .2s;
         }
-        .flow-box.active { background: #333; color: #fff; border-color: #333; }
-        .flow-box h4 { font-size: 0.8rem; margin-bottom: 0.25rem; }
-        .flow-box p { font-size: 0.7rem; opacity: 0.7; }
-        .flow-arrow { color: #ccc; font-size: 1.2rem; }
-
-        .tool-demo {
-            background: #f8f8f8;
-            padding: 1.5rem;
-            margin-top: 1rem;
-        }
-        .tool-demo pre {
-            background: #1a1a1a;
-            color: #e0e0e0;
-            padding: 1rem;
-            font-size: 0.75rem;
-            overflow-x: auto;
-            margin-top: 0.5rem;
-        }
-
-        .explanation {
-            background: #f8f8f8;
-            padding: 1.5rem;
-            margin-top: 2rem;
-            border-left: 3px solid #ddd;
-        }
-        .explanation h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.5rem; }
-        .explanation p { font-size: 0.9rem; color: #666; margin-bottom: 0.5rem; }
+        .flow-box.active { background: var(--yellow); border-color: var(--yellow); color: var(--yellow-ink); }
+        .flow-box h4 { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: inherit; margin-bottom: 2px; }
+        .flow-box p { font-size: 13px; color: var(--ink-3); }
+        .flow-box.active p { color: var(--yellow-ink); }
+        .flow-arrow { flex: none; color: var(--ink-3); font-size: 18px; }
+        .tool-demo { margin-top: 24px; }
+        .tool-demo .data-panel { min-width: 0; }
 
         @media (max-width: 768px) {
-            .api-builder { grid-template-columns: 1fr; }
-            .roles-explanation { grid-template-columns: 1fr; }
+            .roles-explanation { grid-template-columns: 1fr; gap: 12px; }
+            .tool-flow { flex-direction: column; align-items: stretch; gap: 6px; }
+            .flow-arrow { align-self: center; transform: rotate(90deg); }
+            .add-message select.input { width: 112px; }
         }
     </style>
 </head>
-<body>
-    <nav><a href="index.html">← Powrót do strony głównej</a></nav>
+<body class="edu">
+    <header class="edu-header"><div class="edu-header-inner">
+        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM - strona główna">
+            <img class="edu-logo" src="assets/edulab-mark-ink.png" alt="edulab">
+            <span class="edu-wordmark">edulab</span>
+        </a>
+        <nav class="edu-nav" aria-label="Tematy">
+            <a href="tokenization.html">Tokenizacja</a>
+            <a href="temperature.html">Parametry</a>
+            <a href="rag.html">RAG</a>
+            <a href="agents.html">Agenci</a>
+            <a href="security.html">Bezpieczeństwo</a>
+            <a href="api.html" aria-current="page">API</a>
+        </nav>
+    </div></header>
 
-    <div class="container">
-        <h1>LLM przez API</h1>
-        <p class="intro">Większość LLM dostępna jest przez REST API. Zrozumienie struktury zapytań, ról i function calling jest kluczowe do budowania aplikacji.</p>
+    <header class="page-head">
+        <h1 class="app-title">LLM przez API</h1>
+        <p class="edu-lead">Większość LLM dostępna jest przez REST API. Zrozumienie struktury zapytań, ról i function calling jest kluczowe do budowania aplikacji.</p>
+    </header>
 
-        <div class="section">
-            <h2>Role w konwersacji</h2>
+    <main class="bands">
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Role w konwersacji</h2></div>
             <div class="roles-explanation">
-                <div class="role-box" onclick="selectRole('system')">
-                    <h4><span class="role-badge">system</span></h4>
+                <button type="button" class="role-box" aria-pressed="false" onclick="selectRole('system')">
+                    <h4><span class="role-badge system">system</span></h4>
                     <p>Instrukcje dla modelu, persona, ograniczenia. Ustawia kontekst całej rozmowy.</p>
-                </div>
-                <div class="role-box" onclick="selectRole('user')">
-                    <h4><span class="role-badge">user</span></h4>
+                </button>
+                <button type="button" class="role-box" aria-pressed="false" onclick="selectRole('user')">
+                    <h4><span class="role-badge user">user</span></h4>
                     <p>Wiadomości od użytkownika - pytania, polecenia, dane wejściowe.</p>
-                </div>
-                <div class="role-box" onclick="selectRole('assistant')">
-                    <h4><span class="role-badge">assistant</span></h4>
+                </button>
+                <button type="button" class="role-box" aria-pressed="false" onclick="selectRole('assistant')">
+                    <h4><span class="role-badge assistant">assistant</span></h4>
                     <p>Odpowiedzi modelu. Można też użyć do "priming" - podpowiedzi jak odpowiadać.</p>
+                </button>
+            </div>
+        </div></section>
+
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Budowanie zapytania API</h2></div>
+            <div class="grid-2 api-builder">
+                <div class="card builder-panel">
+                    <div class="card-head"><h3>Wiadomości</h3></div>
+                    <div class="card-body">
+                        <div class="message-list" id="messageList" aria-live="polite">
+                            <div class="message-item system">
+                                <span class="message-role">system</span>
+                                <span class="message-content">Jesteś pomocnym asystentem.</span>
+                            </div>
+                            <div class="message-item user">
+                                <span class="message-role">user</span>
+                                <span class="message-content">Czym jest tokenizacja?</span>
+                            </div>
+                        </div>
+                        <div class="add-message">
+                            <select class="input" id="newRole" aria-label="Rola">
+                                <option value="system">system</option>
+                                <option value="user" selected>user</option>
+                                <option value="assistant">assistant</option>
+                            </select>
+                            <input class="input" type="text" id="newContent" placeholder="Treść wiadomości..." aria-label="Treść wiadomości" onkeydown="if (event.key === 'Enter') addMessage()">
+                            <button type="button" class="btn" onclick="addMessage()" aria-label="Dodaj wiadomość">+</button>
+                        </div>
+                    </div>
+                    <div class="card-foot">
+                        <div class="actions">
+                            <button type="button" class="btn btn-ghost" onclick="clearMessages()">Wyczyść</button>
+                            <button type="button" class="btn" onclick="updatePreview()">Odśwież JSON</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-panel json-preview builder-panel">
+                    <div class="label">Podgląd JSON</div>
+                    <pre id="jsonPreview" aria-live="polite"></pre>
                 </div>
             </div>
-        </div>
+        </div></section>
 
-        <div class="section">
-            <h2>Budowanie zapytania API</h2>
-            <div class="api-builder">
-                <div class="builder-panel">
-                    <h3>Wiadomości</h3>
-                    <div class="message-list" id="messageList">
-                        <div class="message-item system">
-                            <span class="message-role">system</span>
-                            <span class="message-content">Jesteś pomocnym asystentem.</span>
-                        </div>
-                        <div class="message-item user">
-                            <span class="message-role">user</span>
-                            <span class="message-content">Czym jest tokenizacja?</span>
-                        </div>
-                    </div>
-                    <div class="add-message">
-                        <select id="newRole">
-                            <option value="system">system</option>
-                            <option value="user" selected>user</option>
-                            <option value="assistant">assistant</option>
-                        </select>
-                        <input type="text" id="newContent" placeholder="Treść wiadomości...">
-                        <button onclick="addMessage()">+</button>
-                    </div>
-                    <div style="margin-top:1rem;">
-                        <button class="secondary" onclick="clearMessages()">Wyczyść</button>
-                        <button onclick="updatePreview()">Odśwież JSON</button>
-                    </div>
-                </div>
-                <div class="builder-panel">
-                    <h3>Podgląd JSON</h3>
-                    <div class="json-preview" id="jsonPreview"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>Function / Tool Calling</h2>
-            <p style="color:#666;font-size:0.9rem;margin-bottom:1rem;">Model może "wywoływać" funkcje zdefiniowane przez programistę. To podstawa agentów i automatyzacji.</p>
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Function / Tool Calling</h2></div>
+            <p class="sec-hint">Model może "wywoływać" funkcje zdefiniowane przez programistę. To podstawa agentów i automatyzacji.</p>
 
             <div class="tool-flow">
                 <div class="flow-box" id="fc1">
                     <h4>1. Zapytanie</h4>
                     <p>+ definicje funkcji</p>
                 </div>
-                <span class="flow-arrow">→</span>
+                <span class="flow-arrow" aria-hidden="true">→</span>
                 <div class="flow-box" id="fc2">
                     <h4>2. Model decyduje</h4>
                     <p>wywołać funkcję?</p>
                 </div>
-                <span class="flow-arrow">→</span>
+                <span class="flow-arrow" aria-hidden="true">→</span>
                 <div class="flow-box" id="fc3">
                     <h4>3. Function call</h4>
                     <p>nazwa + argumenty</p>
                 </div>
-                <span class="flow-arrow">→</span>
+                <span class="flow-arrow" aria-hidden="true">→</span>
                 <div class="flow-box" id="fc4">
                     <h4>4. Wykonanie</h4>
                     <p>Twój kod</p>
                 </div>
-                <span class="flow-arrow">→</span>
+                <span class="flow-arrow" aria-hidden="true">→</span>
                 <div class="flow-box" id="fc5">
                     <h4>5. Wynik</h4>
                     <p>do modelu</p>
                 </div>
             </div>
 
-            <button onclick="animateToolCall()">Animuj proces</button>
+            <button type="button" class="btn" onclick="animateToolCall()">Animuj proces</button>
 
-            <div class="tool-demo">
-                <strong>Przykład definicji funkcji:</strong>
-                <pre>{
+            <div class="grid-2 tool-demo">
+                <div class="data-panel">
+                    <div class="label">Przykład definicji funkcji:</div>
+                    <pre>{
   "name": "get_weather",
   "description": "Pobiera aktualną pogodę dla miasta",
   "parameters": {
@@ -296,24 +214,32 @@
     "required": ["city"]
   }
 }</pre>
-                <strong style="margin-top:1rem;display:block;">Model odpowiada:</strong>
-                <pre>{
+                </div>
+                <div class="data-panel">
+                    <div class="label">Model odpowiada:</div>
+                    <pre>{
   "function_call": {
     "name": "get_weather",
     "arguments": "{\"city\": \"Warszawa\"}"
   }
 }</pre>
+                </div>
             </div>
-        </div>
 
-        <div class="explanation">
-            <h3>Najlepsze praktyki API</h3>
-            <p><strong>Autoryzacja:</strong> Używaj kluczy API z ograniczonymi uprawnieniami. Nie umieszczaj ich w kodzie frontendowym.</p>
-            <p><strong>Rate limiting:</strong> Respektuj limity API. Implementuj exponential backoff przy błędach 429.</p>
-            <p><strong>Streaming:</strong> Dla lepszego UX używaj Server-Sent Events do strumieniowania odpowiedzi token po tokenie.</p>
-            <p><strong>Koszty:</strong> Monitoruj zużycie tokenów. System prompt jest wysyłany z każdym zapytaniem!</p>
-        </div>
-    </div>
+            <div class="callout edu-block">
+                <h3>Najlepsze praktyki API</h3>
+                <p><strong>Autoryzacja:</strong> Używaj kluczy API z ograniczonymi uprawnieniami. Nie umieszczaj ich w kodzie frontendowym.</p>
+                <p><strong>Rate limiting:</strong> Respektuj limity API. Implementuj exponential backoff przy błędach 429.</p>
+                <p><strong>Streaming:</strong> Dla lepszego UX używaj Server-Sent Events do strumieniowania odpowiedzi token po tokenie.</p>
+                <p><strong>Koszty:</strong> Monitoruj zużycie tokenów. System prompt jest wysyłany z każdym zapytaniem!</p>
+            </div>
+        </div></section>
+    </main>
+
+    <footer class="edu-footer"><div class="edu-footer-inner">
+        <a href="index.html">← Anatomia LLM</a>
+        <span>Interaktywny przewodnik po Large Language Models</span>
+    </div></footer>
 
     <script>
         let messages = [
@@ -368,8 +294,9 @@
         }
 
         function selectRole(role) {
-            document.querySelectorAll('.role-box').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.role-box').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
             event.currentTarget.classList.add('active');
+            event.currentTarget.setAttribute('aria-pressed', 'true');
         }
 
         async function animateToolCall() {

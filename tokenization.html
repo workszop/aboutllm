@@ -4,339 +4,255 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anatomia LLM - Interaktywny Przewodnik</title>
+    <link rel="icon" type="image/png" href="assets/edulab-mark-ink.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="colors_and_type.css">
+    <link rel="stylesheet" href="edu.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #fafafa;
-            color: #1a1a1a;
-            line-height: 1.6;
-        }
-        nav {
-            padding: 1rem 2rem;
-            border-bottom: 1px solid #e0e0e0;
-            background: #fff;
-        }
-        nav a { color: #666; text-decoration: none; font-size: 0.9rem; }
-        nav a:hover { color: #000; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
-        h1 { font-size: 2rem; font-weight: 400; margin-bottom: 1rem; }
-        .intro { color: #666; margin-bottom: 3rem; font-size: 1.1rem; }
-        .section {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        .section h2 { font-size: 1.1rem; font-weight: 500; margin-bottom: 1rem; color: #333; }
-        .input-area { margin-bottom: 1.5rem; }
-        .input-area textarea {
-            width: 100%;
-            padding: 1rem;
-            border: 1px solid #ddd;
-            font-size: 1rem;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 80px;
-        }
-        .input-area textarea:focus { outline: none; border-color: #999; }
+        /* ─── Tokenization ─── */
         .tokens-display {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            min-height: 50px;
-            padding: 1rem;
-            background: #f8f8f8;
-            border: 1px solid #eee;
+            display: flex; flex-wrap: wrap; gap: 6px; min-height: 64px;
+            margin-top: 16px; padding: 14px; border-radius: var(--r-md);
+            background: var(--paper-2); border: 1px solid var(--line);
         }
         .token {
-            background: #e8e8e8;
-            padding: 6px 12px;
-            font-size: 0.9rem;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
+            font-family: var(--font-mono); font-size: 14px; color: var(--ink);
+            background: var(--surface); border: 1px solid var(--line-strong);
+            padding: 5px 10px; border-radius: var(--r-xs); cursor: pointer;
+            transition: background-color .15s, color .15s;
         }
-        .token:hover { background: #ddd; border-color: #bbb; }
-        .token.selected { background: #333; color: #fff; }
-        .stats {
-            display: flex;
-            gap: 2rem;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #eee;
-            font-size: 0.9rem;
-            color: #666;
-        }
-        .embedding-viz { display: flex; gap: 2rem; align-items: flex-start; }
-        .vector-display {
-            flex: 1;
-            font-family: monospace;
-            font-size: 0.8rem;
-            background: #f8f8f8;
-            padding: 1rem;
-            border: 1px solid #eee;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .vector-bars { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        .bar-row { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; }
-        .bar-label { width: 30px; color: #999; }
-        .bar { height: 12px; background: #333; transition: width 0.3s ease; }
-        .bar-value { width: 50px; color: #666; font-family: monospace; }
+        .token:hover { background: var(--yellow); border-color: var(--yellow); color: var(--yellow-ink); }
+        .token.selected { background: var(--blue-soft); border-color: var(--blue-soft); color: var(--blue-ink); }
+        .stats { display: flex; gap: 8px 28px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 13px; color: var(--ink-2); }
+        .stats strong { font-size: 15px; }
 
-        /* Base vs Instruct */
-        .comparison-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .panel { border: 1px solid #e0e0e0; }
-        .panel-header {
-            background: #f5f5f5;
-            padding: 0.75rem 1rem;
-            font-weight: 500;
-            font-size: 0.9rem;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .panel-content { padding: 1rem; min-height: 150px; font-size: 0.9rem; }
-        .panel-content.base { font-family: monospace; font-size: 0.85rem; }
-        .example-selector { margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .example-btn {
-            padding: 0.5rem 1rem;
-            border: 1px solid #ddd;
-            background: #fff;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-        .example-btn:hover { border-color: #999; }
-        .example-btn.active { background: #333; color: #fff; border-color: #333; }
+        /* ─── Embedding ─── */
+        .vector-display { max-height: 300px; overflow-y: auto; white-space: normal; }
+        .vector-bars { display: flex; flex-direction: column; gap: 6px; }
+        .bar-row { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 12px; }
+        .bar-label { width: 30px; color: var(--ink-3); }
+        .bar { height: 12px; border-radius: 3px; transition: width .3s ease; }
+        .bar.pos { background: var(--blue-soft); }
+        .bar.neg { background: var(--red-soft); }
+        .bar-value { width: 56px; color: var(--ink-2); }
+        .bars-legend { display: flex; gap: 16px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+        .bars-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
 
-        /* Timeline */
-        .timeline { display: flex; gap: 0; margin: 2rem 0; }
+        /* ─── Base vs Instruct ─── */
+        .panel-content { min-height: 170px; font-size: 15px; line-height: 1.6; color: var(--ink-2); }
+        .panel-content.base { font-family: var(--font-mono); font-size: 13.5px; }
+        .code-block { margin: 8px 0; padding: 12px 14px; border-radius: var(--r-sm); background: var(--ink); color: var(--paper); overflow-x: auto; }
+        .code-block code { background: none; padding: 0; color: inherit; font-size: 13px; }
+
+        /* ─── Timeline ─── */
+        .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
         .timeline-step {
-            flex: 1;
-            text-align: center;
-            padding: 1.5rem 1rem;
-            background: #f8f8f8;
-            border: 1px solid #e0e0e0;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
+            position: relative; text-align: left; font: inherit; cursor: pointer;
+            padding: 18px 20px; border-radius: var(--r-lg);
+            background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong);
+            transition: background-color .15s, border-color .15s;
         }
         .timeline-step:not(:last-child)::after {
-            content: '→';
-            position: absolute;
-            right: -12px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 1;
-            color: #999;
+            content: '→'; position: absolute; right: -22px; top: 50%; transform: translateY(-50%);
+            color: var(--ink-3); font-size: 18px;
         }
-        .timeline-step:hover { background: #f0f0f0; }
-        .timeline-step.active { background: #333; color: #fff; border-color: #333; }
-        .timeline-step h4 { font-size: 0.9rem; margin-bottom: 0.25rem; }
-        .timeline-step p { font-size: 0.75rem; opacity: 0.7; }
-        .timeline-detail {
-            background: #f8f8f8;
-            padding: 1.5rem;
-            border: 1px solid #e0e0e0;
-            border-top: none;
-            display: none;
-        }
-        .timeline-detail.active { display: block; }
-        .timeline-detail h4 { margin-bottom: 0.75rem; font-size: 0.95rem; }
-        .timeline-detail p { font-size: 0.9rem; color: #666; margin-bottom: 0.5rem; }
-        .progress-bar {
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 1rem;
-        }
-        .progress-fill {
-            height: 100%;
-            background: #333;
-            width: 0%;
-            transition: width 2s ease;
-        }
+        .timeline-step:hover { background: var(--paper-2); }
+        .timeline-step.active { background: var(--yellow); border-color: var(--yellow); color: var(--yellow-ink); }
+        .timeline-step h4 { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: inherit; margin-bottom: 2px; }
+        .timeline-step p { font-size: 14px; color: inherit; }
+        .timeline-detail { display: none; margin-top: 20px; }
+        .timeline-detail.active { display: flex; }
+        .timeline-detail p { font-size: 15px; margin-bottom: 6px; }
+        .progress-bar { height: 8px; border-radius: 999px; background: var(--paper-3); overflow: hidden; margin-top: 14px; }
+        .progress-fill { height: 100%; width: 0%; background: var(--yellow); transition: width 2s ease; }
 
-        /* Calculator */
-        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-        .calc-inputs { display: flex; flex-direction: column; gap: 1rem; }
-        .calc-row { display: flex; flex-direction: column; gap: 0.5rem; }
-        .calc-row label { font-size: 0.85rem; color: #666; }
-        .calc-row input[type="range"] { width: 100%; }
-        .calc-row select {
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            font-size: 0.9rem;
-        }
-        .calc-value { font-family: monospace; font-size: 0.85rem; color: #333; }
-        .calc-results {
-            background: #f8f8f8;
-            padding: 1.5rem;
-            border: 1px solid #e0e0e0;
-        }
-        .calc-results h4 { margin-bottom: 1rem; font-size: 0.95rem; }
+        /* ─── Calculator ─── */
+        .calc-inputs { display: flex; flex-direction: column; gap: 18px; }
+        .calc-row .field-label { display: flex; justify-content: space-between; gap: 8px; }
+        .calc-value { font-family: var(--font-mono); font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--ink); background: var(--paper-3); padding: 1px 8px; border-radius: var(--r-xs); }
+        .calc-results { display: flex; flex-direction: column; }
         .result-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
-            font-size: 0.9rem;
+            display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+            padding: 12px 0; border-bottom: 1px solid color-mix(in srgb, var(--paper) 14%, transparent);
+            font-family: var(--font-sans); font-size: 15px; color: var(--paper);
         }
         .result-row:last-child { border-bottom: none; }
-        .result-value { font-weight: 500; font-family: monospace; }
-
-        .explanation {
-            background: #f8f8f8;
-            padding: 1.5rem;
-            margin-top: 1rem;
-            border-left: 3px solid #ddd;
-        }
-        .explanation h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.5rem; }
-        .explanation p { font-size: 0.9rem; color: #666; }
+        .result-value { font-family: var(--font-display); font-weight: 600; font-size: 19px; color: var(--yellow); font-variant-numeric: tabular-nums; }
 
         @media (max-width: 768px) {
-            .comparison-panels { grid-template-columns: 1fr; }
-            .calc-grid { grid-template-columns: 1fr; }
-            .timeline { flex-direction: column; }
+            .timeline { grid-template-columns: 1fr; gap: 10px; }
             .timeline-step::after { display: none; }
-            .embedding-viz { flex-direction: column; }
         }
     </style>
 </head>
-<body>
-    <nav><a href="index.html">← Powrót do strony głównej</a></nav>
+<body class="edu">
+    <header class="edu-header"><div class="edu-header-inner">
+        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM - strona główna">
+            <img class="edu-logo" src="assets/edulab-mark-ink.png" alt="edulab">
+            <span class="edu-wordmark">edulab</span>
+        </a>
+        <nav class="edu-nav" aria-label="Tematy">
+            <a href="tokenization.html" aria-current="page">Tokenizacja</a>
+            <a href="temperature.html">Parametry</a>
+            <a href="rag.html">RAG</a>
+            <a href="agents.html">Agenci</a>
+            <a href="security.html">Bezpieczeństwo</a>
+            <a href="api.html">API</a>
+        </nav>
+    </div></header>
 
-    <div class="container">
-        <h1>Anatomia LLM</h1>
-        <p class="intro">Poznaj wewnętrzne mechanizmy dużych modeli językowych: jak przetwarzają tekst, jak powstają i ile kosztują.</p>
+    <header class="page-head">
+        <h1 class="app-title">Anatomia LLM</h1>
+        <p class="edu-lead">Poznaj wewnętrzne mechanizmy dużych modeli językowych: jak przetwarzają tekst, jak powstają i ile kosztują.</p>
+    </header>
 
-        <div class="section">
-            <h2>1. Tokenizacja - jak model "widzi" tekst</h2>
-            <div class="input-area">
-                <textarea id="inputText" placeholder="Wpisz dowolny tekst...">Duże modele językowe są fascynujące!</textarea>
+    <main class="bands">
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Tokenizacja - jak model "widzi" tekst</h2></div>
+            <div class="card">
+                <div class="card-body">
+                    <label class="field-label" for="inputText">Tekst</label>
+                    <textarea class="input" id="inputText" rows="3" placeholder="Wpisz dowolny tekst...">Duże modele językowe są fascynujące!</textarea>
+                    <div class="tokens-display" id="tokensDisplay" aria-live="polite"></div>
+                </div>
+                <div class="card-foot">
+                    <div class="stats">
+                        <span>Znaki: <strong id="charCount">0</strong></span>
+                        <span>Tokeny: <strong id="tokenCount">0</strong></span>
+                        <span>Stosunek: <strong id="ratio">0</strong> znaków/token</span>
+                    </div>
+                </div>
             </div>
-            <div class="tokens-display" id="tokensDisplay"></div>
-            <div class="stats">
-                <span>Znaki: <strong id="charCount">0</strong></span>
-                <span>Tokeny: <strong id="tokenCount">0</strong></span>
-                <span>Stosunek: <strong id="ratio">0</strong> znaków/token</span>
-            </div>
-            <div class="explanation">
+            <div class="callout edu-block">
                 <h3>Jak to działa?</h3>
                 <p><strong>Tokenizacja</strong> dzieli tekst na mniejsze jednostki. Algorytmy jak BPE łączą często występujące sekwencje znaków. Średnio 1 token ≈ 4 znaki w angielskim, ale w polskim może być więcej.</p>
             </div>
-        </div>
+        </div></section>
 
-        <div class="section">
-            <h2>2. Embedding - reprezentacja wektorowa</h2>
-            <p style="color:#666;font-size:0.9rem;margin-bottom:1rem;">Kliknij na token powyżej, aby zobaczyć jego reprezentację wektorową (symulacja).</p>
-            <div class="embedding-viz">
-                <div class="vector-display" id="vectorDisplay">Wybierz token...</div>
-                <div class="vector-bars" id="vectorBars"></div>
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Embedding - reprezentacja wektorowa</h2></div>
+            <p class="sec-hint">Kliknij na token powyżej, aby zobaczyć jego reprezentację wektorową (symulacja).</p>
+            <div class="grid-2">
+                <div class="data-panel vector-display" id="vectorDisplay">Wybierz token...</div>
+                <div class="card">
+                    <div class="card-body"><div class="vector-bars" id="vectorBars"></div></div>
+                    <div class="card-foot">
+                        <div class="bars-legend"><span><i class="bar pos"></i>+</span><span><i class="bar neg"></i>−</span></div>
+                    </div>
+                </div>
             </div>
-            <div class="explanation">
+            <div class="callout edu-block">
                 <p><strong>Embedding</strong> zamienia każdy token na wektor (listę liczb), np. 768 lub 4096 wymiarów. Podobne znaczeniowo słowa mają podobne wektory - "król" i "królowa" będą blisko siebie w przestrzeni wektorowej.</p>
             </div>
-        </div>
+        </div></section>
 
-        <div class="section">
-            <h2>3. Base Model vs Instruct Model</h2>
-            <div class="example-selector">
-                <button class="example-btn active" onclick="showExample(0)">Pytanie o programowanie</button>
-                <button class="example-btn" onclick="showExample(1)">Pytanie faktograficzne</button>
-                <button class="example-btn" onclick="showExample(2)">Prośba o tłumaczenie</button>
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Base Model vs Instruct Model</h2></div>
+            <div class="pill-group">
+                <button class="pill example-btn active" onclick="showExample(0)">Pytanie o programowanie</button>
+                <button class="pill example-btn" onclick="showExample(1)">Pytanie faktograficzne</button>
+                <button class="pill example-btn" onclick="showExample(2)">Prośba o tłumaczenie</button>
             </div>
-            <div class="comparison-panels">
-                <div class="panel">
-                    <div class="panel-header">Base Model (GPT-3 base)</div>
-                    <div class="panel-content base" id="baseResponse"></div>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-head"><h4>Base Model (GPT-3 base)</h4></div>
+                    <div class="card-body panel-content base" id="baseResponse" aria-live="polite"></div>
                 </div>
-                <div class="panel">
-                    <div class="panel-header">Instruct Model (GPT-3.5/4)</div>
-                    <div class="panel-content" id="instructResponse"></div>
+                <div class="card">
+                    <div class="card-head"><h4>Instruct Model (GPT-3.5/4)</h4></div>
+                    <div class="card-body panel-content" id="instructResponse" aria-live="polite"></div>
                 </div>
             </div>
-            <div class="explanation">
+            <div class="callout edu-block">
                 <p><strong>Base Model</strong> to model tylko do przewidywania następnego tokenu - kontynuuje tekst statystycznie. <strong>Instruct Model</strong> został dodatkowo wytrenowany na dialogach i instrukcjach, dzięki czemu odpowiada na pytania.</p>
             </div>
-        </div>
+        </div></section>
 
-        <div class="section">
-            <h2>4. Jak powstaje LLM?</h2>
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Jak powstaje LLM?</h2></div>
             <div class="timeline">
-                <div class="timeline-step active" onclick="showPhase(0)">
+                <button class="timeline-step active" onclick="showPhase(0)">
                     <h4>Pre-training</h4>
                     <p>Nauka języka</p>
-                </div>
-                <div class="timeline-step" onclick="showPhase(1)">
+                </button>
+                <button class="timeline-step" onclick="showPhase(1)">
                     <h4>SFT</h4>
                     <p>Fine-tuning instrukcji</p>
-                </div>
-                <div class="timeline-step" onclick="showPhase(2)">
+                </button>
+                <button class="timeline-step" onclick="showPhase(2)">
                     <h4>RLHF</h4>
                     <p>Uczenie z feedbacku</p>
+                </button>
+            </div>
+            <div class="card timeline-detail active" id="phase0">
+                <div class="card-head"><h4>Pre-training (trening wstępny)</h4></div>
+                <div class="card-body">
+                    <p>Model uczy się przewidywać następne słowo na ogromnym korpusie tekstu (internet, książki, Wikipedia). Wymaga setek GPU przez tygodnie/miesiące.</p>
+                    <p><strong>Koszt:</strong> $2-10M+ dla dużych modeli</p>
+                    <p><strong>Dane:</strong> Biliony tokenów tekstu</p>
+                    <div class="progress-bar"><div class="progress-fill" id="progress0"></div></div>
                 </div>
             </div>
-            <div class="timeline-detail active" id="phase0">
-                <h4>Pre-training (trening wstępny)</h4>
-                <p>Model uczy się przewidywać następne słowo na ogromnym korpusie tekstu (internet, książki, Wikipedia). Wymaga setek GPU przez tygodnie/miesiące.</p>
-                <p><strong>Koszt:</strong> $2-10M+ dla dużych modeli</p>
-                <p><strong>Dane:</strong> Biliony tokenów tekstu</p>
-                <div class="progress-bar"><div class="progress-fill" id="progress0"></div></div>
+            <div class="card timeline-detail" id="phase1">
+                <div class="card-head"><h4>Supervised Fine-Tuning (SFT)</h4></div>
+                <div class="card-body">
+                    <p>Model jest trenowany na parach instrukcja-odpowiedź napisanych przez ludzi. Uczy się formatu dialogu i wykonywania poleceń.</p>
+                    <p><strong>Dane:</strong> 10-100k przykładów wysokiej jakości</p>
+                    <p><strong>Efekt:</strong> Model zaczyna odpowiadać zamiast tylko kontynuować tekst</p>
+                    <div class="progress-bar"><div class="progress-fill" id="progress1"></div></div>
+                </div>
             </div>
-            <div class="timeline-detail" id="phase1">
-                <h4>Supervised Fine-Tuning (SFT)</h4>
-                <p>Model jest trenowany na parach instrukcja-odpowiedź napisanych przez ludzi. Uczy się formatu dialogu i wykonywania poleceń.</p>
-                <p><strong>Dane:</strong> 10-100k przykładów wysokiej jakości</p>
-                <p><strong>Efekt:</strong> Model zaczyna odpowiadać zamiast tylko kontynuować tekst</p>
-                <div class="progress-bar"><div class="progress-fill" id="progress1"></div></div>
+            <div class="card timeline-detail" id="phase2">
+                <div class="card-head"><h4>RLHF (Reinforcement Learning from Human Feedback)</h4></div>
+                <div class="card-body">
+                    <p>Ludzie oceniają odpowiedzi modelu. Na podstawie tych ocen trenowany jest model nagrody (reward model), który następnie używany jest do optymalizacji głównego modelu.</p>
+                    <p><strong>Efekt:</strong> Model jest bardziej pomocny, bezpieczny i zgodny z preferencjami użytkowników</p>
+                    <p><strong>Techniki:</strong> PPO, DPO, RLHF</p>
+                    <div class="progress-bar"><div class="progress-fill" id="progress2"></div></div>
+                </div>
             </div>
-            <div class="timeline-detail" id="phase2">
-                <h4>RLHF (Reinforcement Learning from Human Feedback)</h4>
-                <p>Ludzie oceniają odpowiedzi modelu. Na podstawie tych ocen trenowany jest model nagrody (reward model), który następnie używany jest do optymalizacji głównego modelu.</p>
-                <p><strong>Efekt:</strong> Model jest bardziej pomocny, bezpieczny i zgodny z preferencjami użytkowników</p>
-                <p><strong>Techniki:</strong> PPO, DPO, RLHF</p>
-                <div class="progress-bar"><div class="progress-fill" id="progress2"></div></div>
-            </div>
-        </div>
+        </div></section>
 
-        <div class="section">
-            <h2>5. Ekonomia LLM - kalkulator kosztów</h2>
-            <div class="calc-grid">
-                <div class="calc-inputs">
-                    <div class="calc-row">
-                        <label>Model</label>
-                        <select id="modelSelect" onchange="updateCalc()">
-                            <option value="gpt4o">GPT-4o ($2.50 / $10 per 1M)</option>
-                            <option value="gpt4">GPT-4 Turbo ($10 / $30 per 1M)</option>
-                            <option value="gpt35">GPT-3.5 Turbo ($0.50 / $1.50 per 1M)</option>
-                            <option value="claude3">Claude 3.5 Sonnet ($3 / $15 per 1M)</option>
-                            <option value="llama">Llama 3.1 70B (self-hosted)</option>
-                        </select>
-                    </div>
-                    <div class="calc-row">
-                        <label>Tokeny wejściowe: <span class="calc-value" id="inputTokensVal">1000</span></label>
-                        <input type="range" id="inputTokens" min="100" max="100000" value="1000" onchange="updateCalc()">
-                    </div>
-                    <div class="calc-row">
-                        <label>Tokeny wyjściowe: <span class="calc-value" id="outputTokensVal">500</span></label>
-                        <input type="range" id="outputTokens" min="100" max="10000" value="500" onchange="updateCalc()">
-                    </div>
-                    <div class="calc-row">
-                        <label>Liczba zapytań/dzień: <span class="calc-value" id="requestsVal">100</span></label>
-                        <input type="range" id="requests" min="10" max="10000" value="100" onchange="updateCalc()">
-                    </div>
-                    <div class="calc-row">
-                        <label>Tryb</label>
-                        <select id="modeSelect" onchange="updateCalc()">
-                            <option value="batch">Batch (tańszy, wolniejszy)</option>
-                            <option value="stream">Streaming (real-time)</option>
-                        </select>
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Ekonomia LLM - kalkulator kosztów</h2></div>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-body calc-inputs">
+                        <div class="calc-row">
+                            <label class="field-label" for="modelSelect">Model</label>
+                            <select class="input" id="modelSelect" onchange="updateCalc()">
+                                <option value="gpt4o">GPT-4o ($2.50 / $10 per 1M)</option>
+                                <option value="gpt4">GPT-4 Turbo ($10 / $30 per 1M)</option>
+                                <option value="gpt35">GPT-3.5 Turbo ($0.50 / $1.50 per 1M)</option>
+                                <option value="claude3">Claude 3.5 Sonnet ($3 / $15 per 1M)</option>
+                                <option value="llama">Llama 3.1 70B (self-hosted)</option>
+                            </select>
+                        </div>
+                        <div class="calc-row">
+                            <label class="field-label" for="inputTokens">Tokeny wejściowe: <span class="calc-value" id="inputTokensVal">1000</span></label>
+                            <input class="edu-range" type="range" id="inputTokens" min="100" max="100000" value="1000" oninput="updateCalc()">
+                        </div>
+                        <div class="calc-row">
+                            <label class="field-label" for="outputTokens">Tokeny wyjściowe: <span class="calc-value" id="outputTokensVal">500</span></label>
+                            <input class="edu-range" type="range" id="outputTokens" min="100" max="10000" value="500" oninput="updateCalc()">
+                        </div>
+                        <div class="calc-row">
+                            <label class="field-label" for="requests">Liczba zapytań/dzień: <span class="calc-value" id="requestsVal">100</span></label>
+                            <input class="edu-range" type="range" id="requests" min="10" max="10000" value="100" oninput="updateCalc()">
+                        </div>
+                        <div class="calc-row">
+                            <label class="field-label" for="modeSelect">Tryb</label>
+                            <select class="input" id="modeSelect" onchange="updateCalc()">
+                                <option value="batch">Batch (tańszy, wolniejszy)</option>
+                                <option value="stream">Streaming (real-time)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="calc-results">
-                    <h4>Szacunkowe koszty</h4>
+                <div class="data-panel calc-results" aria-live="polite">
+                    <div class="label">Szacunkowe koszty</div>
                     <div class="result-row">
                         <span>Koszt/zapytanie</span>
                         <span class="result-value" id="costPerRequest">$0.00</span>
@@ -359,11 +275,16 @@
                     </div>
                 </div>
             </div>
-            <div class="explanation">
+            <div class="callout edu-block">
                 <p><strong>Input tokens</strong> są tańsze niż <strong>output tokens</strong>. Batch processing może być 50% tańszy, ale ma większą latencję. Self-hosted modele mają wysoki koszt początkowy (GPU), ale niższe koszty per token.</p>
             </div>
-        </div>
-    </div>
+        </div></section>
+    </main>
+
+    <footer class="edu-footer"><div class="edu-footer-inner">
+        <a href="index.html">← Anatomia LLM</a>
+        <span>Interaktywny przewodnik po Large Language Models</span>
+    </div></footer>
 
     <script>
         // Tokenization
@@ -430,7 +351,7 @@
                 const width = Math.abs(val) * 100;
                 row.innerHTML = `
                     <span class="bar-label">d${i}</span>
-                    <div class="bar" style="width:${width}px;background:${val >= 0 ? '#333' : '#999'}"></div>
+                    <div class="bar ${val >= 0 ? 'pos' : 'neg'}" style="width:${width}px"></div>
                     <span class="bar-value">${val.toFixed(3)}</span>
                 `;
                 vectorBars.appendChild(row);
@@ -459,11 +380,27 @@
             }
         ];
 
+        // Minimal markdown: ``` fences, `inline`, **bold**; text is escaped first
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function renderInline(str) {
+            return escapeHtml(str)
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+        }
+        function renderMarkdown(md) {
+            return md.split(/```\w*\n?/).map((part, i) =>
+                i % 2 ? `<pre class="code-block"><code>${escapeHtml(part.replace(/\n$/, ''))}</code></pre>` : renderInline(i ? part.replace(/^\n/, '') : part)
+            ).join('');
+        }
+
         function showExample(idx) {
             document.querySelectorAll('.example-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.example-btn')[idx].classList.add('active');
             document.getElementById('baseResponse').innerHTML = examples[idx].base.replace(/\n/g, '<br>');
-            document.getElementById('instructResponse').innerHTML = examples[idx].instruct.replace(/\n/g, '<br>').replace(/```(\w+)?\n?/g, '<code>').replace(/```/g, '</code>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            document.getElementById('instructResponse').innerHTML = renderMarkdown(examples[idx].instruct);
         }
         showExample(0);
 

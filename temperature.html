@@ -4,301 +4,167 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prompt Engineering - Anatomia LLM</title>
+    <link rel="icon" type="image/png" href="assets/edulab-mark-ink.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="colors_and_type.css">
+    <link rel="stylesheet" href="edu.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #fafafa;
-            color: #1a1a1a;
-            line-height: 1.6;
+        /* ─── Generation parameters ─── */
+        .controls { display: flex; flex-direction: column; gap: 20px; }
+        .control-row .field-label { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .value-chip {
+            font-family: var(--font-mono); font-size: 13px; text-transform: none; letter-spacing: 0;
+            color: var(--ink); background: var(--paper-3); padding: 1px 8px; border-radius: var(--r-xs);
+            font-variant-numeric: tabular-nums;
         }
-        nav {
-            padding: 1rem 2rem;
-            border-bottom: 1px solid #e0e0e0;
-            background: #fff;
-        }
-        nav a { color: #666; text-decoration: none; font-size: 0.9rem; }
-        nav a:hover { color: #000; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
-        h1 { font-size: 2rem; font-weight: 400; margin-bottom: 1rem; }
-        .intro { color: #666; margin-bottom: 3rem; font-size: 1.1rem; }
-        .section {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        .section h2 { font-size: 1.1rem; font-weight: 500; margin-bottom: 1.5rem; color: #333; }
+        .description { font-size: var(--body-sm); color: var(--ink-3); line-height: 1.5; }
 
-        /* Sliders */
-        .controls { display: grid; gap: 1.5rem; }
-        .control-group {
-            display: grid;
-            grid-template-columns: 120px 1fr 60px;
-            align-items: center;
-            gap: 1rem;
-        }
-        .control-group label { font-weight: 500; font-size: 0.9rem; }
-        .control-group input[type="range"] {
-            width: 100%;
-            height: 6px;
-            -webkit-appearance: none;
-            background: #e0e0e0;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        .control-group input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: #333;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        .control-group .value {
-            font-family: monospace;
-            font-size: 0.9rem;
-            text-align: right;
-            color: #666;
-        }
-        .description {
-            font-size: 0.85rem;
-            color: #888;
-            margin-top: 0.25rem;
-            grid-column: 2 / 4;
-        }
-
-        /* Probability viz */
-        .probability-viz { margin-top: 2rem; }
-        .prob-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        .prob-header h3 { font-size: 0.95rem; font-weight: 500; }
-        .prompt-text {
-            font-family: monospace;
-            background: #f5f5f5;
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-            border-radius: 4px;
-        }
-        .prob-bars { display: flex; flex-direction: column; gap: 8px; }
+        /* ─── Probability bars ─── */
+        .prob-bars { display: flex; flex-direction: column; gap: 10px; }
         .prob-bar { display: flex; align-items: center; gap: 12px; }
-        .prob-word { width: 100px; font-size: 0.9rem; text-align: right; }
-        .prob-fill-container {
-            flex: 1;
-            height: 24px;
-            background: #f0f0f0;
-            position: relative;
-            overflow: hidden;
+        .prob-word { width: 88px; flex: none; font-size: 15px; text-align: right; color: var(--ink); }
+        .prob-fill-container { flex: 1; height: 22px; background: var(--paper-3); border-radius: var(--r-xs); overflow: hidden; }
+        .prob-fill { height: 100%; background: var(--ink-3); border-radius: var(--r-xs); transition: width .3s ease; }
+        .prob-fill.selected { background: var(--blue-soft); }
+        .prob-percent { width: 52px; flex: none; font-family: var(--font-mono); font-size: 13px; color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+        .prompt-text {
+            font-family: var(--font-mono); font-size: 13px; color: var(--ink);
+            background: var(--paper-3); padding: 4px 10px; border-radius: var(--r-xs);
         }
-        .prob-fill {
-            height: 100%;
-            background: #333;
-            transition: width 0.3s ease;
-        }
-        .prob-fill.selected { background: #000; }
-        .prob-percent { width: 50px; font-family: monospace; font-size: 0.8rem; color: #666; }
 
-        .output-area { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #eee; }
-        .output-area h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 1rem; }
-        .generated-text {
-            font-family: monospace;
-            background: #f8f8f8;
-            padding: 1rem;
-            min-height: 100px;
-            font-size: 0.9rem;
-            line-height: 1.8;
-            border: 1px solid #eee;
-        }
-        .generated-text .word { padding: 2px 4px; border-radius: 2px; cursor: help; }
-        .generated-text .word:hover { background: #e8e8e8; }
-        button {
-            padding: 0.75rem 1.5rem;
-            background: #333;
-            color: #fff;
-            border: none;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover { background: #000; }
+        /* ─── Generated text (dark data panel) ─── */
+        .generated-text { min-height: 110px; font-size: 15px; line-height: 1.9; color: color-mix(in srgb, var(--paper) 62%, transparent); }
+        .generated-text .prompt-echo { color: color-mix(in srgb, var(--paper) 62%, transparent); }
+        .generated-text .word { color: var(--yellow); padding: 2px 4px; border-radius: var(--r-xs); cursor: help; transition: background-color .15s; }
+        .generated-text .word:hover { background: color-mix(in srgb, var(--paper) 14%, transparent); }
 
-        /* JSON Editor */
-        .json-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .editor-panel h3 { font-size: 0.9rem; margin-bottom: 0.75rem; font-weight: 500; }
-        .json-editor {
-            width: 100%;
-            min-height: 200px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            padding: 1rem;
-            border: 1px solid #ddd;
-            background: #1a1a1a;
-            color: #e0e0e0;
-            resize: vertical;
+        /* ─── Callout comparison ─── */
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+        .comparison-box {
+            padding: 14px 16px; border-radius: var(--r-md);
+            border: 1px solid color-mix(in srgb, var(--blue-ink) 40%, transparent);
         }
-        .json-editor:focus { outline: none; border-color: #666; }
+        .comparison-box h4 { font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+        .comparison-box p { font-size: 14px; }
+
+        /* ─── JSON ─── */
+        textarea.json-editor { min-height: 290px; font-family: var(--font-mono); font-size: 13.5px; }
         .json-preview {
-            background: #f8f8f8;
-            padding: 1rem;
-            min-height: 200px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            border: 1px solid #e0e0e0;
-            overflow: auto;
+            min-height: 230px; white-space: pre-wrap; overflow: auto;
+            border: 2px solid transparent; transition: border-color .15s;
         }
-        .json-preview.valid { border-color: #0a0; background: #f5fff5; }
-        .json-preview.invalid { border-color: #c00; background: #fff5f5; }
-        .validation-msg {
-            margin-top: 0.5rem;
-            padding: 0.5rem;
-            font-size: 0.85rem;
-            border-radius: 4px;
-        }
-        .validation-msg.success { background: #e8f5e9; color: #2e7d32; }
-        .validation-msg.error { background: #ffebee; color: #c62828; }
+        .json-preview.valid { border-color: var(--green); }
+        .json-preview.invalid { border-color: var(--red); }
+        .validation-msg { font-size: var(--body-sm); font-weight: 500; padding: 6px 14px; border-radius: var(--r-pill); }
+        .validation-msg:empty { display: none; }
+        .validation-msg.success { background: var(--green-soft); color: var(--green-ink); }
+        .validation-msg.error { background: var(--red-soft); color: var(--red-ink); }
 
-        /* Scenarios */
-        .scenarios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        .scenario-card {
-            border: 1px solid #e0e0e0;
-            cursor: pointer;
-            transition: all 0.3s;
-            perspective: 1000px;
-        }
-        .scenario-card:hover { border-color: #999; transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.08); }
-        .card-inner {
-            position: relative;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-        }
+        /* ─── Scenario flip cards ─── */
+        .scenarios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .scenario-card { cursor: pointer; perspective: 1000px; border-radius: var(--r-lg); }
+        .card-inner { position: relative; transition: transform .6s; transform-style: preserve-3d; }
         .scenario-card.flipped .card-inner { transform: rotateY(180deg); }
         .card-front, .card-back {
-            padding: 1.5rem;
-            min-height: 220px;
-            backface-visibility: hidden;
+            padding: 22px; min-height: 340px; border-radius: var(--r-lg);
+            background: var(--surface); border: 1px solid var(--line-2); box-shadow: var(--shadow-sm);
+            backface-visibility: hidden; -webkit-backface-visibility: hidden;
+            transition: border-color .15s;
         }
-        .card-back {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            transform: rotateY(180deg);
-            background: #f8f8f8;
-            overflow: auto;
-        }
+        .scenario-card:hover .card-front, .scenario-card:hover .card-back { border-color: var(--line-strong); }
+        .card-back { position: absolute; inset: 0; transform: rotateY(180deg); overflow: auto; }
         .scenario-icon {
-            width: 48px;
-            height: 48px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+            width: 52px; height: 52px; border-radius: var(--r-md);
+            background: var(--yellow); color: var(--yellow-ink);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-mono); font-weight: 500; font-size: 1.5rem; margin-bottom: 16px;
         }
-        .scenario-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
-        .scenario-card p { font-size: 0.85rem; color: #666; }
-        .card-back h4 { font-size: 0.9rem; margin-bottom: 0.5rem; }
-        .card-back ul { font-size: 0.8rem; color: #666; padding-left: 1rem; margin-bottom: 0.75rem; }
-        .card-back li { margin-bottom: 0.25rem; }
-        .pro { color: #2e7d32; }
-        .con { color: #c62828; }
-
-        .explanation {
-            background: #f8f8f8;
-            padding: 1.5rem;
-            margin-top: 2rem;
-            border-left: 3px solid #ddd;
-        }
-        .explanation h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.5rem; }
-        .explanation p { font-size: 0.9rem; color: #666; margin-bottom: 0.5rem; }
-
-        .comparison {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        .comparison-box {
-            padding: 1rem;
-            background: #fff;
-            border: 1px solid #ddd;
-        }
-        .comparison-box h4 { font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; }
-        .comparison-box p { font-size: 0.8rem; color: #666; }
+        .scenario-card h3 { font-size: 22px; margin-bottom: 6px; }
+        .scenario-card p { font-size: 15px; }
+        .card-back h4 { font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
+        .card-back ul { font-size: 14px; padding-left: 18px; margin-bottom: 12px; }
+        .card-back li { margin-bottom: 2px; }
+        .card-back .audience { font-size: 14px; }
+        .pro { color: var(--green-600); }
+        .con { color: var(--red-600); }
 
         @media (max-width: 768px) {
-            .control-group { grid-template-columns: 1fr; gap: 0.5rem; }
-            .control-group .value { text-align: left; }
-            .description { grid-column: 1; }
-            .json-grid { grid-template-columns: 1fr; }
-            .scenarios-grid { grid-template-columns: 1fr; }
             .comparison { grid-template-columns: 1fr; }
+            .scenarios-grid { grid-template-columns: 1fr; }
+            .prob-word { width: 72px; font-size: 14px; }
+            .prob-percent { width: 46px; font-size: 12px; }
         }
     </style>
 </head>
-<body>
-    <nav><a href="index.html">← Powrót do strony głównej</a></nav>
+<body class="edu">
+    <header class="edu-header"><div class="edu-header-inner">
+        <a class="edu-brand" href="index.html" aria-label="Anatomia LLM - strona główna">
+            <img class="edu-logo" src="assets/edulab-mark-ink.png" alt="edulab">
+            <span class="edu-wordmark">edulab</span>
+        </a>
+        <nav class="edu-nav" aria-label="Tematy">
+            <a href="tokenization.html">Tokenizacja</a>
+            <a href="temperature.html" aria-current="page">Parametry</a>
+            <a href="rag.html">RAG</a>
+            <a href="agents.html">Agenci</a>
+            <a href="security.html">Bezpieczeństwo</a>
+            <a href="api.html">API</a>
+        </nav>
+    </div></header>
 
-    <div class="container">
-        <h1>Prompt Engineering</h1>
-        <p class="intro">Parametry generowania, struktura odpowiedzi i scenariusze pracy z LLM. Naucz się kontrolować zachowanie modelu.</p>
+    <header class="page-head">
+        <h1 class="app-title">Prompt Engineering</h1>
+        <p class="edu-lead">Parametry generowania, struktura odpowiedzi i scenariusze pracy z LLM. Naucz się kontrolować zachowanie modelu.</p>
+    </header>
 
-        <div class="section">
-            <h2>1. Parametry generowania</h2>
-            <div class="controls">
-                <div class="control-group">
-                    <label>Temperature</label>
-                    <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
-                    <span class="value" id="tempValue">0.7</span>
+    <main class="bands">
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Parametry generowania</h2></div>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-body controls">
+                        <div class="control-row">
+                            <label class="field-label" for="temperature">Temperature <span class="value-chip" id="tempValue">0.7</span></label>
+                            <input class="edu-range" type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                            <p class="description">Niska = deterministyczne, Wysoka = kreatywne/losowe</p>
+                        </div>
+                        <div class="control-row">
+                            <label class="field-label" for="topp">Top-p <span class="value-chip" id="toppValue">0.9</span></label>
+                            <input class="edu-range" type="range" id="topp" min="0" max="1" step="0.05" value="0.9">
+                            <p class="description">Nucleus sampling - rozważa tokeny sumujące się do p prawdopodobieństwa</p>
+                        </div>
+                        <div class="control-row">
+                            <label class="field-label" for="topk">Top-k <span class="value-chip" id="topkValue">40</span></label>
+                            <input class="edu-range" type="range" id="topk" min="1" max="50" step="1" value="40">
+                            <p class="description">Rozważa tylko k najbardziej prawdopodobnych tokenów</p>
+                        </div>
+                        <div class="control-row">
+                            <label class="field-label" for="maxtokens">Max tokens <span class="value-chip" id="maxValue">256</span></label>
+                            <input class="edu-range" type="range" id="maxtokens" min="10" max="4096" step="10" value="256">
+                            <p class="description">Maksymalna długość odpowiedzi w tokenach</p>
+                        </div>
+                    </div>
                 </div>
-                <p class="description">Niska = deterministyczne, Wysoka = kreatywne/losowe</p>
-
-                <div class="control-group">
-                    <label>Top-p</label>
-                    <input type="range" id="topp" min="0" max="1" step="0.05" value="0.9">
-                    <span class="value" id="toppValue">0.9</span>
+                <div class="card">
+                    <div class="card-head"><h4>Rozkład prawdopodobieństwa następnego słowa</h4></div>
+                    <div class="card-body"><div class="prob-bars" id="probBars"></div></div>
+                    <div class="card-foot"><span class="prompt-text">Prompt: "Słońce świeci"</span></div>
                 </div>
-                <p class="description">Nucleus sampling - rozważa tokeny sumujące się do p prawdopodobieństwa</p>
-
-                <div class="control-group">
-                    <label>Top-k</label>
-                    <input type="range" id="topk" min="1" max="50" step="1" value="40">
-                    <span class="value" id="topkValue">40</span>
-                </div>
-                <p class="description">Rozważa tylko k najbardziej prawdopodobnych tokenów</p>
-
-                <div class="control-group">
-                    <label>Max tokens</label>
-                    <input type="range" id="maxtokens" min="10" max="4096" step="10" value="256">
-                    <span class="value" id="maxValue">256</span>
-                </div>
-                <p class="description">Maksymalna długość odpowiedzi w tokenach</p>
             </div>
 
-            <div class="probability-viz">
-                <div class="prob-header">
-                    <h3>Rozkład prawdopodobieństwa następnego słowa</h3>
-                    <span class="prompt-text">Prompt: "Słońce świeci"</span>
+            <div class="card">
+                <div class="card-head"><h4>Symulacja generowania</h4></div>
+                <div class="card-body">
+                    <div class="data-panel generated-text" id="generatedText" aria-live="polite">Kliknij "Generuj tekst" aby zobaczyć wynik...</div>
                 </div>
-                <div class="prob-bars" id="probBars"></div>
+                <div class="card-foot">
+                    <button class="btn" onclick="generate()">Generuj tekst</button>
+                </div>
             </div>
 
-            <div class="output-area">
-                <h3>Symulacja generowania</h3>
-                <button onclick="generate()">Generuj tekst</button>
-                <div class="generated-text" id="generatedText">Kliknij "Generuj tekst" aby zobaczyć wynik...</div>
-            </div>
-
-            <div class="explanation">
+            <div class="callout edu-block">
                 <h3>Jak działają parametry?</h3>
                 <div class="comparison">
                     <div class="comparison-box">
@@ -311,14 +177,15 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div></section>
 
-        <div class="section">
-            <h2>2. Wymuszanie struktury JSON</h2>
-            <div class="json-grid">
-                <div class="editor-panel">
-                    <h3>Prompt z wymaganą strukturą</h3>
-                    <textarea class="json-editor" id="jsonInput">Zwróć dane użytkownika w formacie JSON:
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Wymuszanie struktury JSON</h2></div>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-head"><h4><label for="jsonInput">Prompt z wymaganą strukturą</label></h4></div>
+                    <div class="card-body">
+                        <textarea class="input json-editor" id="jsonInput" rows="13">Zwróć dane użytkownika w formacie JSON:
 {
   "name": "string",
   "age": number,
@@ -327,33 +194,37 @@
 }
 
 Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy</textarea>
-                    <button style="margin-top:0.75rem;" onclick="validateAndPreview()">Waliduj i podgląd</button>
-                    <div class="validation-msg" id="validationMsg"></div>
+                    </div>
+                    <div class="card-foot">
+                        <button class="btn" onclick="validateAndPreview()">Waliduj i podgląd</button>
+                        <div class="validation-msg" id="validationMsg" aria-live="polite"></div>
+                    </div>
                 </div>
-                <div class="editor-panel">
-                    <h3>Symulowana odpowiedź modelu</h3>
-                    <div class="json-preview" id="jsonPreview">
-{
+                <div class="card">
+                    <div class="card-head"><h4>Symulowana odpowiedź modelu</h4></div>
+                    <div class="card-body">
+                        <div class="data-panel json-preview" id="jsonPreview">{
   "name": "Jan Kowalski",
   "age": 28,
   "email": "jan@example.com",
   "interests": ["programowanie", "szachy"]
 }</div>
+                    </div>
                 </div>
             </div>
-            <div class="explanation">
+            <div class="callout edu-block">
                 <p><strong>Structured Output</strong> to technika wymuszania formatu odpowiedzi. Nowoczesne API (OpenAI, Anthropic) oferują tryb JSON mode, który gwarantuje poprawny JSON. Można też definiować schematy (JSON Schema) do walidacji.</p>
             </div>
-        </div>
+        </div></section>
 
-        <div class="section">
-            <h2>3. Scenariusze pracy z LLM</h2>
-            <p style="color:#666;font-size:0.9rem;margin-bottom:1.5rem;">Kliknij kartę, aby zobaczyć szczegóły</p>
+        <section class="sec"><div class="wrap">
+            <div class="sec-head"><h2>Scenariusze pracy z LLM</h2></div>
+            <p class="sec-hint">Kliknij kartę, aby zobaczyć szczegóły</p>
             <div class="scenarios-grid">
-                <div class="scenario-card" onclick="flipCard(this)">
+                <div class="scenario-card" role="button" tabindex="0" aria-pressed="false" onclick="flipCard(this)">
                     <div class="card-inner">
                         <div class="card-front">
-                            <div class="scenario-icon">💬</div>
+                            <div class="scenario-icon" aria-hidden="true">💬</div>
                             <h3>Chat Online</h3>
                             <p>ChatGPT, Claude, Gemini - interfejsy webowe do konwersacji z modelami.</p>
                         </div>
@@ -371,15 +242,15 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
                                 <li class="con">Limity użycia w darmowych planach</li>
                             </ul>
                             <h4>Dla kogo:</h4>
-                            <p style="font-size:0.8rem;">Casual users, szybkie pytania, prototypowanie</p>
+                            <p class="audience">Casual users, szybkie pytania, prototypowanie</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="scenario-card" onclick="flipCard(this)">
+                <div class="scenario-card" role="button" tabindex="0" aria-pressed="false" onclick="flipCard(this)">
                     <div class="card-inner">
                         <div class="card-front">
-                            <div class="scenario-icon">🖥️</div>
+                            <div class="scenario-icon" aria-hidden="true">🖥️</div>
                             <h3>Lokalny LLM</h3>
                             <p>Ollama, LM Studio, llama.cpp - modele uruchamiane na własnym komputerze.</p>
                         </div>
@@ -397,15 +268,15 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
                                 <li class="con">Wymaga konfiguracji</li>
                             </ul>
                             <h4>Dla kogo:</h4>
-                            <p style="font-size:0.8rem;">Developerzy, firmy z wrażliwymi danymi, enthusiasts</p>
+                            <p class="audience">Developerzy, firmy z wrażliwymi danymi, enthusiasts</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="scenario-card" onclick="flipCard(this)">
+                <div class="scenario-card" role="button" tabindex="0" aria-pressed="false" onclick="flipCard(this)">
                     <div class="card-inner">
                         <div class="card-front">
-                            <div class="scenario-icon">{}</div>
+                            <div class="scenario-icon" aria-hidden="true">{}</div>
                             <h3>API</h3>
                             <p>OpenAI API, Anthropic API, Azure OpenAI - programistyczny dostęp do modeli.</p>
                         </div>
@@ -423,20 +294,25 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
                                 <li class="con">Rate limits</li>
                             </ul>
                             <h4>Dla kogo:</h4>
-                            <p style="font-size:0.8rem;">Developerzy, produkty SaaS, automatyzacja</p>
+                            <p class="audience">Developerzy, produkty SaaS, automatyzacja</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="explanation">
-            <h3>Best Practices</h3>
-            <p><strong>Temperature:</strong> Użyj 0-0.3 dla zadań wymagających precyzji (kod, fakty), 0.7-1.0 dla kreatywnych (pisanie, brainstorming).</p>
-            <p><strong>Max tokens:</strong> Ustaw rozsądny limit, aby uniknąć zbyt długich lub zbyt kosztownych odpowiedzi.</p>
-            <p><strong>Structured output:</strong> Zawsze używaj JSON mode lub schema validation w produkcji.</p>
-        </div>
-    </div>
+            <div class="callout edu-block">
+                <h3>Best Practices</h3>
+                <p><strong>Temperature:</strong> Użyj 0-0.3 dla zadań wymagających precyzji (kod, fakty), 0.7-1.0 dla kreatywnych (pisanie, brainstorming).</p>
+                <p><strong>Max tokens:</strong> Ustaw rozsądny limit, aby uniknąć zbyt długich lub zbyt kosztownych odpowiedzi.</p>
+                <p><strong>Structured output:</strong> Zawsze używaj JSON mode lub schema validation w produkcji.</p>
+            </div>
+        </div></section>
+    </main>
+
+    <footer class="edu-footer"><div class="edu-footer-inner">
+        <a href="index.html">← Anatomia LLM</a>
+        <span>Interaktywny przewodnik po Large Language Models</span>
+    </div></footer>
 
     <script>
         const words = [
@@ -539,7 +415,7 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
             const text = options[Math.floor(Math.random() * options.length)];
 
             const container = document.getElementById('generatedText');
-            container.innerHTML = '<span style="color:#888">Słońce świeci </span>';
+            container.innerHTML = '<span class="prompt-echo">Słońce świeci </span>';
 
             const wordsArray = text.split(' ');
             let i = 0;
@@ -577,11 +453,11 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
             try {
                 const formatted = JSON.stringify(response, null, 2);
                 preview.textContent = formatted;
-                preview.className = 'json-preview valid';
+                preview.className = 'data-panel json-preview valid';
                 msg.textContent = '✓ JSON poprawny! Odpowiedź zgodna ze schematem.';
                 msg.className = 'validation-msg success';
             } catch (e) {
-                preview.className = 'json-preview invalid';
+                preview.className = 'data-panel json-preview invalid';
                 msg.textContent = '✗ Błąd walidacji: ' + e.message;
                 msg.className = 'validation-msg error';
             }
@@ -589,8 +465,14 @@ Użytkownik: Jan Kowalski, 28 lat, jan@example.com, lubi programowanie i szachy<
 
         // Flip cards
         function flipCard(card) {
-            card.classList.toggle('flipped');
+            const flipped = card.classList.toggle('flipped');
+            card.setAttribute('aria-pressed', flipped);
         }
+        document.querySelectorAll('.scenario-card').forEach(card => {
+            card.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flipCard(card); }
+            });
+        });
 
         document.getElementById('temperature').addEventListener('input', updateVisualization);
         document.getElementById('topp').addEventListener('input', updateVisualization);
